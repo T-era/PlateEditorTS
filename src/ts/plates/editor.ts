@@ -90,8 +90,10 @@ module plates {
       var x = index * (config.plateWidth + 2);
 
       context.beginPath();
-      context.strokeStyle = editor.themeCol.toString();
-      editor.drawIcon(this.context, new canvas_tools.Pointer(x + 1, 1));
+      var iconConfig = {
+        color: editor.themeCol
+      };
+      editor.drawIcon(this.context, new canvas_tools.Pointer(x + 1, 1), iconConfig);
       context.stroke();
 
       this.drawLadder();
@@ -104,22 +106,31 @@ module plates {
       var index = this.index;
       var x = index * (config.plateWidth + 2);
       context.beginPath();
-      context.strokeStyle = editor.themeCol.lighten().toString();
-      context.moveTo(x, 1 + config.iconHeight);
-      context.lineTo(x, canvas.height);
-      context.moveTo(x + config.plateWidth + 1, 1 + this.config.iconHeight);
-      context.lineTo(x + config.plateWidth + 1, canvas.height);
+      var ladderVConfig = {
+        color: editor.themeCol.lighten()
+      };
+      canvas_tools.line(context,
+        new canvas_tools.Pointer(x, 1 + config.iconHeight),
+        new canvas_tools.Pointer(x, canvas.height),
+        ladderVConfig);
+      canvas_tools.line(context,
+        new canvas_tools.Pointer(x + config.plateWidth + 1, 1 + this.config.iconHeight),
+        new canvas_tools.Pointer(x + config.plateWidth + 1, canvas.height),
+        ladderVConfig);
       context.stroke();
 
       context.beginPath();
-      context.strokeStyle = editor.themeCol.lighten().toString();
-      context.setLineDash([3, 3]);
+      var ladderHConfig = {
+        color: editor.themeCol.lighten(),
+        lineDash: [3,3]
+      };
       for (var y = config.iconHeight + config.unitHeight + 1; y < canvas.height;  y += config.unitHeight) {
-        context.moveTo(x, y);
-        context.lineTo(x + config.plateWidth, y);
+        canvas_tools.line(context,
+          new canvas_tools.Pointer(x, y),
+          new canvas_tools.Pointer(x + config.plateWidth, y),
+          ladderHConfig);
       }
       context.stroke();
-      context.setLineDash([]);
     }
     isOn(pos :canvas_tools.Pos) :boolean {
       return 0 <= pos.x

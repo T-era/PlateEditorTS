@@ -67,4 +67,8 @@ module canvas_tools {
     apply(context, config);
     context.arc(center.cx, center.cy, r, 0, 2 * Math.PI, false);
   }
+  export function rect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config? :DrawConfig) {
+    apply(context, config);
+    context.strokeRect(leftTop.cx, leftTop.cy, width, height);
+  }
 }

@@ -22,7 +22,9 @@ module test {
       config);
   }
   function rect(c, p :canvas_tools.Pointer) {
-    c.strokeRect(p.cx, p.cy, 50, 30);
+    c.beginPath();
+    canvas_tools.rect(c, p, 50, 30);
+    c.stroke();
   }
   var SLCT_CONF = { lineWidth: 3 };
   function crcl(c, p :canvas_tools.Pointer, config? :canvas_tools.DrawConfig) {
@@ -34,6 +36,7 @@ module test {
     c.stroke();
   }
   function crss(c, p :canvas_tools.Pointer, config? :canvas_tools.DrawConfig) {
+    c.beginPath();
     canvas_tools.line(c,
         new canvas_tools.Pointer(p.cx + 15, p.cy + 5),
         new canvas_tools.Pointer(p.cx + 35, p.cy + 25),
