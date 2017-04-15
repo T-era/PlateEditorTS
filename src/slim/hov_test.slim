@@ -1,0 +1,23 @@
+doctype html
+html
+  head
+    meta charset="UTF-8"
+    script type="text/javascript" src="canvas_tools.js"
+    script type="text/javascript" src="hover.js"
+    script type="text/javascript"
+      | function init() {
+          var cnv = document.getElementById('canvas_test');
+          var hov = hover.newHover(cnv);
+          hov.setHoverImage(function(c, pos) {
+            c.strokeStyle = '#cfc'; c.strokeRect(pos.x - 25, pos.y - 15, 50, 30);
+          });
+          var tmp;
+          cnv.onclick = function() {
+            hov.save();
+            hov.setHover(tmp);
+            tmp = ! tmp;
+          }
+        }
+
+  body onload='init()'
+    canvas width='210' height='400' style='width: 210px; height: 400px; background: #efe;' id='canvas_test'

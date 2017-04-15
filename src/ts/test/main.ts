@@ -1,0 +1,47 @@
+/// <reference path='../../lib/canvas_tools.d.ts' />
+/// <reference path='../../lib/hover.d.ts' />
+/// <reference path='../../lib/plates.d.ts' />
+
+module test {
+  export function init() {
+    var config = {
+      plateWidth: 50,
+      iconHeight: 30,
+      unitHeight: 15,
+      selections: [],
+      editors: [
+        { drawIcon: rect, themeCol: new canvas_tools.Color(0, 128, 0) },
+        { drawIcon: rect, themeCol: new canvas_tools.Color(128, 128, 255) }
+      ] };
+    config.selections = [
+        new plates.PlateItem(crcl, config, new canvas_tools.Pointer(150, 100), 30),
+        new plates.PlateItem(crss, config, new canvas_tools.Pointer(150, 200), 30) ];
+
+    new plates.PlateEditor(
+      <HTMLCanvasElement>document.getElementById('canvas_test'),
+      config);
+  }
+  function rect(c, p :canvas_tools.Pointer) {
+    c.strokeRect(p.cx, p.cy, 50, 30);
+  }
+  var SLCT_CONF = { lineWidth: 3 };
+  function crcl(c, p :canvas_tools.Pointer, config? :canvas_tools.DrawConfig) {
+    c.beginPath();
+    canvas_tools.circle(c,
+        new canvas_tools.Pointer(25 + p.cx, 15 + p.cy),
+        10,
+        config);
+    c.stroke();
+  }
+  function crss(c, p :canvas_tools.Pointer, config? :canvas_tools.DrawConfig) {
+    canvas_tools.line(c,
+        new canvas_tools.Pointer(p.cx + 15, p.cy + 5),
+        new canvas_tools.Pointer(p.cx + 35, p.cy + 25),
+        SLCT_CONF);
+    canvas_tools.line(c,
+        new canvas_tools.Pointer(p.cx + 35, p.cy + 5),
+        new canvas_tools.Pointer(p.cx + 15, p.cy + 25),
+        config);
+    c.stroke();
+  }
+}
