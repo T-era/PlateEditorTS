@@ -2,14 +2,12 @@
 
 module plates {
   export interface Config {
-    iconHeight :number;
     plateWidth :number;
     unitHeight :number;
     selections :PlateItem[];
     editors :EditorConfig[];
   }
   export interface EditorConfig {
-    drawIcon :canvas_tools.Drawing;
     themeCol :canvas_tools.Color;
   }
   export class PlateItem implements canvas_tools.CanvasItem {
@@ -19,7 +17,7 @@ module plates {
     pointer :canvas_tools.Pointer;
     drawConfig :canvas_tools.DrawConfig;
 
-    constructor(drawPath :canvas_tools.Drawing, config :Config, pointer :canvas_tools.Pointer, height :number, drawConfig :canvas_tools.DrawConfig) {
+    constructor(drawPath :canvas_tools.Drawing, config :Config, pointer :canvas_tools.Pointer, height :number, drawConfig? :canvas_tools.DrawConfig) {
       this.drawPath = drawPath;
       this.config = config;
       this.pointer = pointer;

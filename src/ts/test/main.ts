@@ -6,12 +6,11 @@ module test {
   export function init() {
     var config = {
       plateWidth: 50,
-      iconHeight: 30,
       unitHeight: 15,
       selections: [],
       editors: [
-        { drawIcon: rect, themeCol: new canvas_tools.Color(0, 128, 0) },
-        { drawIcon: rect, themeCol: new canvas_tools.Color(128, 128, 255) }
+        { themeCol: new canvas_tools.Color(0, 128, 0) },
+        { themeCol: new canvas_tools.Color(128, 128, 255) }
       ] };
     config.selections = [
         new plates.PlateItem(crcl, config, new canvas_tools.Pointer(150, 100), 30, {

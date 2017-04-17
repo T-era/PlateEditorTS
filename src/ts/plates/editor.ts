@@ -48,7 +48,7 @@ module plates {
       this.index = index;
       this.editor = editor;
       this.getOnMouse = getOnMouse;
-      var maxY = Math.floor((canvas.height - config.iconHeight) / config.unitHeight);
+      var maxY = Math.floor(canvas.height / config.unitHeight);
       this.model = newEditorModel(config, maxY);
       var that = this;
 
@@ -60,8 +60,7 @@ module plates {
     onMouseMove(pointer :canvas_tools.Pointer) {
       var pos = pointer.at(this);
       if (this.isOn(pos)) {
-        var editorY = pos.y - this.config.iconHeight;
-        var cellY = Math.floor(editorY / this.config.unitHeight);
+        var cellY = Math.floor(pos.y / this.config.unitHeight);
         if (cellY >= 0) {   // アイコンの領域もあるでな。
           var om = this.getOnMouse();
           if (om) {
@@ -70,12 +69,12 @@ module plates {
               var dc = {
                 color: this.editor.themeCol.lighten(),
                 shadow: SHADOW_ON_SUGGESTION };
-              om.draw(this.context, new canvas_tools.Pointer(this.index * this.config.plateWidth, 1 + this.config.iconHeight + cellY * this.config.unitHeight), dc);
+              om.draw(this.context, new canvas_tools.Pointer(this.index * this.config.plateWidth, 1 + cellY * this.config.unitHeight), dc);
             } else if (ovwStatus == OverwriteStatus.Replace) {
               var dc = {
                 color: this.editor.themeCol.ish(canvas_tools.RED),
                 shadow: SHADOW_ON_SUGGESTION };
-              om.draw(this.context, new canvas_tools.Pointer(this.index * this.config.plateWidth, 1 + this.config.iconHeight + cellY * this.config.unitHeight), dc);
+              om.draw(this.context, new canvas_tools.Pointer(this.index * this.config.plateWidth, 1 + cellY * this.config.unitHeight), dc);
             }
           }
         }
@@ -89,13 +88,6 @@ module plates {
       var index = this.index;
       var editor = this.editor;
       var x = index * (config.plateWidth + 2);
-
-      context.beginPath();
-      var iconConfig = {
-        color: editor.themeCol
-      };
-      editor.drawIcon(this.context, new canvas_tools.Pointer(x + 1, 1), iconConfig);
-      context.stroke();
 
       this.drawLadder();
     }
@@ -111,11 +103,11 @@ module plates {
         color: editor.themeCol.lighten()
       };
       canvas_tools.line(context,
-        new canvas_tools.Pointer(x, 1 + config.iconHeight),
+        new canvas_tools.Pointer(x, 1),
         new canvas_tools.Pointer(x, canvas.height),
         ladderVConfig);
       canvas_tools.line(context,
-        new canvas_tools.Pointer(x + config.plateWidth + 1, 1 + this.config.iconHeight),
+        new canvas_tools.Pointer(x + config.plateWidth + 1, 1),
         new canvas_tools.Pointer(x + config.plateWidth + 1, canvas.height),
         ladderVConfig);
       context.stroke();
@@ -125,7 +117,7 @@ module plates {
         color: editor.themeCol.lighten(),
         lineDash: [3,3]
       };
-      for (var y = config.iconHeight + config.unitHeight + 1; y < canvas.height;  y += config.unitHeight) {
+      for (var y = config.unitHeight + 1; y < canvas.height;  y += config.unitHeight) {
         canvas_tools.line(context,
           new canvas_tools.Pointer(x, y),
           new canvas_tools.Pointer(x + config.plateWidth, y),
@@ -143,7 +135,7 @@ module plates {
       var items = model.list();
       var x = index * (config.plateWidth + 2);
       for (var cellY = 0, max = items.length; cellY < max; cellY ++) {
-        var y = 1 + config.iconHeight + cellY * config.unitHeight
+        var y = 1 + cellY * config.unitHeight
         var item = items[cellY];
         if (item) {
           item.drawPath(context, new canvas_tools.Pointer(x, y), item.drawConfig);
@@ -156,8 +148,7 @@ module plates {
           && pos.x <= this.config.plateWidth - 1;
     }
     tryAdd(item :PlateItem, pos :canvas_tools.Pos) {
-      var editorY = pos.y - this.config.iconHeight;
-      var cellY = Math.floor(editorY / this.config.unitHeight);
+      var cellY = Math.floor(pos.y / this.config.unitHeight);
 
       this.context.beginPath();
       var ovwStatus = this.model.canAdd(item, cellY);
@@ -166,7 +157,7 @@ module plates {
       }
       if (ovwStatus != OverwriteStatus.Locked) {
         var left = 1 + this.pointer.cx;
-        var top = 1 + this.config.iconHeight + cellY * this.config.unitHeight;
+        var top = 1 + cellY * this.config.unitHeight;
 
         this.model.put(item, cellY);
         this.context.strokeStyle = this.editor.themeCol.darken().toString();
@@ -175,8 +166,7 @@ module plates {
       }
     }
     tryRmv(pos :canvas_tools.Pos) :PlateItem {
-      var editorY = pos.y - this.config.iconHeight;
-      var cellY = Math.floor(editorY / this.config.unitHeight);
+      var cellY = Math.floor(pos.y / this.config.unitHeight);
 
       var itemAt = this.model.dropAt(cellY);
       if (itemAt) {
@@ -186,7 +176,7 @@ module plates {
     }
     clearAt(cellY :number, item :PlateItem) {
       var left = 1 + this.pointer.cx;
-      var top = 1 + this.config.iconHeight + cellY * this.config.unitHeight;
+      var top = 1 + cellY * this.config.unitHeight;
       var right = left + this.config.plateWidth - 2;
       var bottom = top + item.height - 2;
       this.context.clearRect(left, top, right - left, bottom - top);
