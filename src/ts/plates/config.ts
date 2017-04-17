@@ -19,7 +19,7 @@ module plates {
     pointer :canvas_tools.Pointer;
     drawConfig :canvas_tools.DrawConfig;
 
-    constructor(drawPath :canvas_tools.Drawing, config :Config, pointer :canvas_tools.Pointer, height :number, drawConfig? :canvas_tools.DrawConfig) {
+    constructor(drawPath :canvas_tools.Drawing, config :Config, pointer :canvas_tools.Pointer, height :number, drawConfig :canvas_tools.DrawConfig) {
       this.drawPath = drawPath;
       this.config = config;
       this.pointer = pointer;

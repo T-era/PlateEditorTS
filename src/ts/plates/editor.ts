@@ -40,7 +40,8 @@ module plates {
         index :number,
         editor :EditorConfig,
         getOnMouse :() => PlateItem) {
-      this.pointer = new canvas_tools.Pointer(index * config.plateWidth, 0);
+      var x = index * config.plateWidth;
+      this.pointer = new canvas_tools.Pointer(x, 0);
       this.canvas = canvas;
       this.context = context;
       this.config = config;
@@ -132,6 +133,24 @@ module plates {
       }
       context.stroke();
     }
+
+    drawItems() {
+      var context = this.context;
+      var config = this.config;
+      var editor = this.editor;
+      var index = this.index;
+      var model = this.model;
+      var items = model.list();
+      var x = index * (config.plateWidth + 2);
+      for (var cellY = 0, max = items.length; cellY < max; cellY ++) {
+        var y = 1 + config.iconHeight + cellY * config.unitHeight
+        var item = items[cellY];
+        if (item) {
+          item.drawPath(context, new canvas_tools.Pointer(x, y), item.drawConfig);
+        }
+      }
+    }
+
     isOn(pos :canvas_tools.Pos) :boolean {
       return 0 <= pos.x
           && pos.x <= this.config.plateWidth - 1;

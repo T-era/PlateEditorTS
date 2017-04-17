@@ -40,7 +40,7 @@ module canvas_tools {
     }
 
     function getValue(propName :string) :any {
-      return (a.hasOwnProperty(propName)
+      return ((a.hasOwnProperty(propName) && a[propName] != null)  // undefined or null
           ? a[propName]
           : b[propName]);
     }
@@ -56,18 +56,19 @@ module canvas_tools {
       context.shadowOffsetY = ex.shadow.offsetY;
     }
     context.strokeStyle = ex.color.toString();
+    context.fillStyle = ex.color.toString();
   }
 
-  export function line(context :CanvasRenderingContext2D, from :Pointer, to :Pointer, config? :DrawConfig) {
+  export function line(context :CanvasRenderingContext2D, from :Pointer, to :Pointer, config :DrawConfig) {
     apply(context, config);
     context.moveTo(from.cx, from.cy);
     context.lineTo(to.cx, to.cy);
   }
-  export function circle(context :CanvasRenderingContext2D, center :Pointer, r :number, config? :DrawConfig) {
+  export function circle(context :CanvasRenderingContext2D, center :Pointer, r :number, config :DrawConfig) {
     apply(context, config);
     context.arc(center.cx, center.cy, r, 0, 2 * Math.PI, false);
   }
-  export function rect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config? :DrawConfig) {
+  export function rect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config :DrawConfig) {
     apply(context, config);
     context.strokeRect(leftTop.cx, leftTop.cy, width, height);
   }
