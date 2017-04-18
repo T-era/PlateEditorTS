@@ -7,14 +7,15 @@ module test {
     var config = {
       unitWidth: 25,
       unitHeight: 15,
-      editorWidth: 75,
+      editorWidth: 100,
       editorHeight: 1200,
       selections: [],
       themeCol: new canvas_tools.Color(0, 128, 0)
     };
     config.selections = [
-        new plates.PlateItem(crcl, new canvas_tools.Pointer(150, 100), 50, 30, {
-          color: new canvas_tools.Color(64, 128, 128)
+        new plates.PlateItem(rect, new canvas_tools.Pointer(150, 100), 50, 30, {
+          strokeColor: new canvas_tools.Color(64, 128, 128),
+          fillColor: new canvas_tools.Color(192, 255, 255)
         }),
         new plates.PlateItem(crss, new canvas_tools.Pointer(150, 200), 50, 30, {
           color: new canvas_tools.Color(192, 128, 128)
@@ -26,10 +27,10 @@ module test {
   }
   function rect(c, p :canvas_tools.Pointer, config :canvas_tools.DrawConfig) {
     c.beginPath();
-    canvas_tools.rect(c, p, 50, 30, config);
+    canvas_tools.fillRect(c, new canvas_tools.Pointer(p.cx, p.cy), 49, 29, config);
+    canvas_tools.rect(c, new canvas_tools.Pointer(p.cx, p.cy), 49, 29, config);
     c.stroke();
   }
-  var SLCT_CONF = { lineWidth: 3 };
   function crcl(c, p :canvas_tools.Pointer, config :canvas_tools.DrawConfig) {
     c.beginPath();
     canvas_tools.circle(c,
@@ -43,7 +44,7 @@ module test {
     canvas_tools.line(c,
         new canvas_tools.Pointer(p.cx + 15, p.cy + 5),
         new canvas_tools.Pointer(p.cx + 35, p.cy + 25),
-        SLCT_CONF);
+        config);
     canvas_tools.line(c,
         new canvas_tools.Pointer(p.cx + 35, p.cy + 5),
         new canvas_tools.Pointer(p.cx + 15, p.cy + 25),

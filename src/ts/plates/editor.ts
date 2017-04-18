@@ -56,14 +56,17 @@ module plates {
           var om = this.getOnMouse();
           if (om) {
             var suggestionConfig = {
-              color: this.config.themeCol.lighten(),
+              strokeColor: this.config.themeCol.lighten(),
+              fillColor: this.config.themeCol.lighten().lighten(),
+              alpha: 0.5,
               shadow: SHADOW_ON_SUGGESTION };
             var duplicated = this.model.getDuplicated(om, { lx: cellX, ly: cellY });
             if (duplicated.length === 0) {
               om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), suggestionConfig);
             } else if (duplicated.length === 1) {
               var replacementConfig = {
-                color: this.config.themeCol.ish(canvas_tools.RED),
+                strokeColor: this.config.themeCol.ish(canvas_tools.RED),
+                fillColor: this.config.themeCol.ish(canvas_tools.RED),
                 shadow: SHADOW_ON_SUGGESTION };
               om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), suggestionConfig);
               var replacementAt = duplicated[0];
@@ -85,7 +88,7 @@ module plates {
 
       context.beginPath();
       var ladderHConfig = {
-        color: config.themeCol.lighten(),
+        strokeColor: config.themeCol.lighten(),
         lineDash: [3,3]
       };
       for (var x = config.unitWidth + 1; x < config.editorWidth; x += config.unitWidth) {

@@ -11,6 +11,7 @@ module hover {
     return new _Hover(canvas);
   }
   var HOVERING_CONF :canvas_tools.DrawConfig = {
+    alpha: 0.8,
     shadow: {
       blur: 3,
       offsetX: 3,

@@ -2,21 +2,27 @@
 
 module canvas_tools {
   export interface Shadow {
+    color ?:Color;
     blur :number;
     offsetX :number;
     offsetY :number;
   }
   export interface DrawConfig {
-    lineWidth? :number;
-    lineDash? :number[];
-    color? :Color;
-    shadow? :Shadow;
+    lineWidth ?:number;
+    lineDash ?:number[];
+    strokeColor ?:Color;
+    fillColor ?:Color;
+    alpha ?:number;
+    shadow ?:Shadow;
   }
   var DEFAULT :DrawConfig = {
     lineWidth: 1,
     lineDash: [],
-    color: BLACK,
+    strokeColor: BLACK,
+    fillColor: BLACK,
+    alpha: 1.0,
     shadow: {
+      color: null,
       blur: 0,
       offsetX: 0,
       offsetY: 0 } };
@@ -35,7 +41,9 @@ module canvas_tools {
       return {
         lineWidth: getValue('lineWidth'),
         lineDash: getValue('lineDash'),
-        color: getValue('color'),
+        strokeColor: getValue('strokeColor'),
+        fillColor: getValue('fillColor'),
+        alpha: getValue('alpha'),
         shadow: getValue('shadow') }
     }
 
@@ -50,13 +58,18 @@ module canvas_tools {
     context.lineWidth = ex.lineWidth;
     context.setLineDash(ex.lineDash);
     if (ex.shadow) {
-      context.shadowColor = ex.color.toString();
+      if (ex.shadow.color) {
+        context.shadowColor = ex.shadow.color.toString();
+      } else {
+        context.shadowColor = ex.fillColor.darken().toString();
+      }
       context.shadowBlur = ex.shadow.blur;
       context.shadowOffsetX = ex.shadow.offsetX;
       context.shadowOffsetY = ex.shadow.offsetY;
     }
-    context.strokeStyle = ex.color.toString();
-    context.fillStyle = ex.color.toString();
+    context.globalAlpha = ex.alpha;
+    context.strokeStyle = ex.strokeColor.toString();
+    context.fillStyle = ex.fillColor.toString();
   }
 
   export function line(context :CanvasRenderingContext2D, from :Pointer, to :Pointer, config :DrawConfig) {
@@ -71,5 +84,9 @@ module canvas_tools {
   export function rect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config :DrawConfig) {
     apply(context, config);
     context.strokeRect(leftTop.cx, leftTop.cy, width, height);
+  }
+  export function fillRect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config :DrawConfig) {
+    apply(context, config);
+    context.fillRect(leftTop.cx, leftTop.cy, width, height);
   }
 }
