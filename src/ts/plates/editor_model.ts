@@ -10,7 +10,7 @@ module plates {
     at :LogicalPos;
   }
   export interface EditorModel {
-    canAdd(item :PlateItem, lPos :LogicalPos) :OverwriteStatus;
+    getDuplicated(item :PlateItem, lPos :LogicalPos) :PlateItemAt[];
 
     put(item :PlateItem, lPos :LogicalPos);
     list() :PlateItemAt[][];
@@ -19,7 +19,6 @@ module plates {
   export function newEditorModel(config :Config) :EditorModel {
     return new _EditorModel(config);
   }
-  export enum OverwriteStatus { Empty, Locked, Replace }
 
   class _EditorModel implements EditorModel {
     listContents :PlateItemAt[][] = [];
@@ -33,16 +32,10 @@ module plates {
       this.maxY = Math.floor(config.editorHeight / config.unitHeight);
     }
 
-    canAdd(item :PlateItem, lPos :LogicalPos) :OverwriteStatus {
+    getDuplicated(item :PlateItem, lPos :LogicalPos) :PlateItemAt[] {
       var dup = this._getAround(lPos, item);
 
-      if (dup.length === 0) {
-        return OverwriteStatus.Empty;
-      } else if (dup.length === 1){
-        return OverwriteStatus.Replace;
-      } else {
-        return OverwriteStatus.Locked;
-      }
+      return dup;
     }
 
     put(item :PlateItem, lPos :LogicalPos) {
@@ -85,7 +78,6 @@ module plates {
           }
         }
       }
-      console.log(dup);
       return dup;
     }
     list() :PlateItemAt[][] {

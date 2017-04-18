@@ -55,17 +55,21 @@ module plates {
         if (cellX >= 0 && cellY >= 0) {
           var om = this.getOnMouse();
           if (om) {
-            var ovwStatus = this.model.canAdd(om, { lx: cellX, ly: cellY });
-            if (ovwStatus == OverwriteStatus.Empty) {
-              var dc = {
-                color: this.config.themeCol.lighten(),
-                shadow: SHADOW_ON_SUGGESTION };
-              om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), dc);
-            } else if (ovwStatus == OverwriteStatus.Replace) {
-              var dc = {
+            var suggestionConfig = {
+              color: this.config.themeCol.lighten(),
+              shadow: SHADOW_ON_SUGGESTION };
+            var duplicated = this.model.getDuplicated(om, { lx: cellX, ly: cellY });
+            if (duplicated.length === 0) {
+              om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), suggestionConfig);
+            } else if (duplicated.length === 1) {
+              var replacementConfig = {
                 color: this.config.themeCol.ish(canvas_tools.RED),
                 shadow: SHADOW_ON_SUGGESTION };
-              om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), dc);
+              om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), suggestionConfig);
+              var replacementAt = duplicated[0];
+              var repItem = replacementAt.item;
+              var repAt = replacementAt.at;
+              repItem.draw(this.context, new canvas_tools.Pointer(1 + repAt.lx * this.config.unitWidth, 1 + repAt.ly * this.config.unitHeight), replacementConfig);
             }
           }
         }
@@ -130,14 +134,14 @@ module plates {
       };
 
       this.context.beginPath();
-      var ovwStatus = this.model.canAdd(item, lPos);
-      if (ovwStatus == OverwriteStatus.Replace) {
+      var duplicated = this.model.getDuplicated(item, lPos);
+      if (duplicated.length === 1) {
         var removed = this.model.dropAt(lPos, item);
         if (removed) {
           this.clearAt2(removed);
         }
       }
-      if (ovwStatus != OverwriteStatus.Locked) {
+      if (duplicated.length <= 1) {
         var left = 1 + cellX * this.config.unitWidth;
         var top = 1 + cellY * this.config.unitHeight;
 
@@ -162,11 +166,9 @@ module plates {
       return null;
     }
     clearAt(cellX :number, cellY :number, item :PlateItem) {
-      var left = 1 + cellX * this.config.unitWidth;
-      var top = 1 + cellY * this.config.unitHeight;
-      var width = item.width - 2;
-      var height = item.height - 2;
-      this.context.clearRect(left, top, width, height);
+      var left = cellX * this.config.unitWidth;
+      var top = cellY * this.config.unitHeight;
+      this.context.clearRect(left, top, item.width, item.height);
       this.drawLadder();
     }
     clearAt2(itemAt :PlateItemAt) {
