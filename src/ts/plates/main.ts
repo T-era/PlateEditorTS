@@ -9,7 +9,7 @@ module plates {
     canvas :HTMLCanvasElement;
     context :CanvasRenderingContext2D;
     hover :hover.Hover;
-    editors :Editor[];
+    editor :Editor;
     config :Config;
     onMouse :PlateItem;
     pallet :Pallet;
@@ -21,15 +21,13 @@ module plates {
       this.hover = hover.newHover(canvas);
       this.config = config;
 
-      var palletAt = new canvas_tools.Pointer(config.editors.length * (config.plateWidth + 2),0);
+      var palletAt = new canvas_tools.Pointer(config.editorWidth + 2,0);
       this.pallet = new Pallet(canvas, this.context, config, palletAt);
       this.pallet.drawItems();
 
-      this.editors = config.editors.map(function(editor :EditorConfig, i :number) {
-        var ret = newEditor(canvas, that.context, config, i, editor, function() { return that.onMouse; });
-        ret.draw();
-        return ret;
-      });
+      this.editor = newEditor(canvas, that.context, config, function() { return that.onMouse; });
+      this.editor.draw();
+
       this.hover.save();
       this.canvas.onclick = function(e :MouseEvent) {
         var pointer = canvas_tools.toPointer(e, that.canvas);
@@ -43,7 +41,7 @@ module plates {
             that.hover.setHoverImage(function(context :CanvasRenderingContext2D, pointer :canvas_tools.Pointer, drawConfig? :canvas_tools.DrawConfig) {
               context.beginPath();
               var toCenter = new canvas_tools.Pointer(
-                pointer.cx - Math.ceil(that.config.plateWidth / 2),
+                pointer.cx - Math.ceil(that.config.unitWidth / 2),
                 pointer.cy - Math.ceil(that.config.unitHeight / 2));
               that.onMouse.draw(context, toCenter, drawConfig);
               context.stroke();
@@ -53,27 +51,24 @@ module plates {
       };
     }
     holdOnMouse(pointer :canvas_tools.Pointer) :PlateItem {
-      for (var i = 0, max = this.editors.length; i < max; i ++) {
-        var editor = this.editors[i];
-        var pos = pointer.at(editor);
-        if (editor.isOn(pos)) {
-          return this.hover.update(function() {
-            return editor.tryRmv(pos);
-          });
-        }
+      var editor = this.editor;
+      var pos = pointer.at(editor);
+      if (editor.isOn(pos)) {
+        return this.hover.update(function() {
+          return editor.tryRmv(pos);
+        });
       }
       return this.pallet.getSelection(pointer);
     }
     put(pointer :canvas_tools.Pointer, item :PlateItem) {
-      var that = this;
-      this.editors.forEach(function(editor :Editor, i) {
-        var pos = pointer.at(editor);
-        if (editor.isOn(pos)) {
-          that.hover.update(function() {
-            editor.tryAdd(item, pos);
-          });
-        }
-      });
+      var editor = this.editor;
+
+      var pos = pointer.at(editor);
+      if (editor.isOn(pos)) {
+        this.hover.update(function() {
+          editor.tryAdd(item, pos);
+        });
+      }
     }
   }
 }

@@ -5,19 +5,19 @@
 module test {
   export function init() {
     var config = {
-      plateWidth: 50,
+      unitWidth: 25,
       unitHeight: 15,
+      editorWidth: 75,
+      editorHeight: 1200,
       selections: [],
-      editors: [
-        { themeCol: new canvas_tools.Color(0, 128, 0) },
-        { themeCol: new canvas_tools.Color(128, 128, 255) }
-      ] };
+      themeCol: new canvas_tools.Color(0, 128, 0)
+    };
     config.selections = [
-        new plates.PlateItem(crcl, config, new canvas_tools.Pointer(150, 100), 30, {
-          color: new canvas_tools.Color(0, 255, 255)
+        new plates.PlateItem(crcl, new canvas_tools.Pointer(150, 100), 50, 30, {
+          color: new canvas_tools.Color(64, 128, 128)
         }),
-        new plates.PlateItem(crss, config, new canvas_tools.Pointer(150, 200), 30, {
-          color: new canvas_tools.Color(255, 128, 128)
+        new plates.PlateItem(crss, new canvas_tools.Pointer(150, 200), 50, 30, {
+          color: new canvas_tools.Color(192, 128, 128)
         })];
 
     new plates.PlateEditor(

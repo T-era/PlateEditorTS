@@ -2,25 +2,24 @@
 
 module plates {
   export interface Config {
-    plateWidth :number;
+    unitWidth :number;
     unitHeight :number;
+    editorWidth :number;
+    editorHeight :number;
     selections :PlateItem[];
-    editors :EditorConfig[];
-  }
-  export interface EditorConfig {
     themeCol :canvas_tools.Color;
   }
   export class PlateItem implements canvas_tools.CanvasItem {
     drawPath :canvas_tools.Drawing;
+    width :number;
     height :number;
-    config :Config;
     pointer :canvas_tools.Pointer;
     drawConfig :canvas_tools.DrawConfig;
 
-    constructor(drawPath :canvas_tools.Drawing, config :Config, pointer :canvas_tools.Pointer, height :number, drawConfig? :canvas_tools.DrawConfig) {
+    constructor(drawPath :canvas_tools.Drawing, pointer :canvas_tools.Pointer, width :number, height :number, drawConfig? :canvas_tools.DrawConfig) {
       this.drawPath = drawPath;
-      this.config = config;
       this.pointer = pointer;
+      this.width = width
       this.height = height;
       this.drawConfig = drawConfig;
     }
@@ -29,10 +28,8 @@ module plates {
     }
 
     isOn(pos :canvas_tools.Pos) :boolean {
-      return 0 <= pos.x
-        && 0 <= pos.y
-        && pos.x <= this.config.plateWidth
-        && pos.y <= this.height;
+      return 0 <= pos.x && pos.x <= this.width
+          && 0 <= pos.y && pos.y <= this.height;
     }
   }
 }

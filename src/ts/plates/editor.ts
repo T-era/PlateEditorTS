@@ -13,15 +13,13 @@ module plates {
   export function newEditor(canvas :HTMLCanvasElement,
       context :CanvasRenderingContext2D,
       config :Config,
-      index :number,
-      editor :EditorConfig,
       getOnMouse :() => PlateItem) :Editor{
-    return new _Editor(canvas, context, config, index, editor, getOnMouse);
+    return new _Editor(canvas, context, config, getOnMouse);
   }
   var SHADOW_ON_SUGGESTION :canvas_tools.Shadow = {
       blur: 20,
       offsetX: 20,
-      offsetY: 3 };
+      offsetY: 30 };
 
   class _Editor implements Editor {
     pointer :canvas_tools.Pointer;
@@ -30,26 +28,18 @@ module plates {
     canvas :HTMLCanvasElement;
     context :CanvasRenderingContext2D;
     config :Config;
-    index :number;
-    editor :EditorConfig;
     getOnMouse :() => PlateItem;
 
     constructor(canvas :HTMLCanvasElement,
         context :CanvasRenderingContext2D,
         config :Config,
-        index :number,
-        editor :EditorConfig,
         getOnMouse :() => PlateItem) {
-      var x = index * config.plateWidth;
-      this.pointer = new canvas_tools.Pointer(x, 0);
+      this.pointer = new canvas_tools.Pointer(0, 0);
       this.canvas = canvas;
       this.context = context;
       this.config = config;
-      this.index = index;
-      this.editor = editor;
       this.getOnMouse = getOnMouse;
-      var maxY = Math.floor(canvas.height / config.unitHeight);
-      this.model = newEditorModel(config, maxY);
+      this.model = newEditorModel(config);
       var that = this;
 
       canvas.onmousemove = canvas_tools.event_chain(canvas.onmousemove, function(e) {
@@ -60,21 +50,22 @@ module plates {
     onMouseMove(pointer :canvas_tools.Pointer) {
       var pos = pointer.at(this);
       if (this.isOn(pos)) {
+        var cellX = Math.floor(pos.x / this.config.unitWidth);
         var cellY = Math.floor(pos.y / this.config.unitHeight);
-        if (cellY >= 0) {   // アイコンの領域もあるでな。
+        if (cellX >= 0 && cellY >= 0) {
           var om = this.getOnMouse();
           if (om) {
-            var ovwStatus = this.model.canAdd(om, cellY);
+            var ovwStatus = this.model.canAdd(om, { lx: cellX, ly: cellY });
             if (ovwStatus == OverwriteStatus.Empty) {
               var dc = {
-                color: this.editor.themeCol.lighten(),
+                color: this.config.themeCol.lighten(),
                 shadow: SHADOW_ON_SUGGESTION };
-              om.draw(this.context, new canvas_tools.Pointer(this.index * this.config.plateWidth, 1 + cellY * this.config.unitHeight), dc);
+              om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), dc);
             } else if (ovwStatus == OverwriteStatus.Replace) {
               var dc = {
-                color: this.editor.themeCol.ish(canvas_tools.RED),
+                color: this.config.themeCol.ish(canvas_tools.RED),
                 shadow: SHADOW_ON_SUGGESTION };
-              om.draw(this.context, new canvas_tools.Pointer(this.index * this.config.plateWidth, 1 + cellY * this.config.unitHeight), dc);
+              om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), dc);
             }
           }
         }
@@ -82,45 +73,27 @@ module plates {
     }
 
     draw() {
-      var canvas = this.canvas;
-      var context = this.context;
-      var config = this.config;
-      var index = this.index;
-      var editor = this.editor;
-      var x = index * (config.plateWidth + 2);
-
       this.drawLadder();
     }
     drawLadder() {
-      var canvas = this.canvas;
       var context = this.context;
       var config = this.config;
-      var editor = this.editor;
-      var index = this.index;
-      var x = index * (config.plateWidth + 2);
-      context.beginPath();
-      var ladderVConfig = {
-        color: editor.themeCol.lighten()
-      };
-      canvas_tools.line(context,
-        new canvas_tools.Pointer(x, 1),
-        new canvas_tools.Pointer(x, canvas.height),
-        ladderVConfig);
-      canvas_tools.line(context,
-        new canvas_tools.Pointer(x + config.plateWidth + 1, 1),
-        new canvas_tools.Pointer(x + config.plateWidth + 1, canvas.height),
-        ladderVConfig);
-      context.stroke();
 
       context.beginPath();
       var ladderHConfig = {
-        color: editor.themeCol.lighten(),
+        color: config.themeCol.lighten(),
         lineDash: [3,3]
       };
-      for (var y = config.unitHeight + 1; y < canvas.height;  y += config.unitHeight) {
+      for (var x = config.unitWidth + 1; x < config.editorWidth; x += config.unitWidth) {
         canvas_tools.line(context,
-          new canvas_tools.Pointer(x, y),
-          new canvas_tools.Pointer(x + config.plateWidth, y),
+          new canvas_tools.Pointer(x, 0),
+          new canvas_tools.Pointer(x, config.editorHeight),
+          ladderHConfig);
+      }
+      for (var y = config.unitHeight + 1; y < config.editorHeight;  y += config.unitHeight) {
+        canvas_tools.line(context,
+          new canvas_tools.Pointer(0, y),
+          new canvas_tools.Pointer(config.editorWidth, y),
           ladderHConfig);
       }
       context.stroke();
@@ -129,58 +102,75 @@ module plates {
     drawItems() {
       var context = this.context;
       var config = this.config;
-      var editor = this.editor;
-      var index = this.index;
       var model = this.model;
       var items = model.list();
-      var x = index * (config.plateWidth + 2);
-      for (var cellY = 0, max = items.length; cellY < max; cellY ++) {
-        var y = 1 + cellY * config.unitHeight
-        var item = items[cellY];
-        if (item) {
-          item.drawPath(context, new canvas_tools.Pointer(x, y), item.drawConfig);
+      for (var cellY = 0, maxY = items.length; cellY < maxY; cellY ++) {
+        for (var cellX = 0, maxX = items[cellY].length; cellX < maxX; cellX ++) {
+          var y = 1 + cellY * config.unitHeight;
+          var x = 1 + cellX * config.unitWidth;
+          var itemAt = items[cellY][cellX];
+          if (itemAt && itemAt.at.lx == cellX && itemAt.at.ly == cellY) {
+            var item = itemAt.item;
+            item.drawPath(context, new canvas_tools.Pointer(x, y), item.drawConfig);
+          }
         }
       }
     }
 
     isOn(pos :canvas_tools.Pos) :boolean {
-      return 0 <= pos.x
-          && pos.x <= this.config.plateWidth - 1;
+      return 0 <= pos.x && pos.x < this.config.editorWidth
+          && 0 <= pos.y && pos.y < this.config.editorHeight;
     }
     tryAdd(item :PlateItem, pos :canvas_tools.Pos) {
+      var cellX = Math.floor(pos.x / this.config.unitWidth);
       var cellY = Math.floor(pos.y / this.config.unitHeight);
+      var lPos = {
+        lx: cellX,
+        ly: cellY
+      };
 
       this.context.beginPath();
-      var ovwStatus = this.model.canAdd(item, cellY);
+      var ovwStatus = this.model.canAdd(item, lPos);
       if (ovwStatus == OverwriteStatus.Replace) {
-        this.clearAt(cellY, item);
+        var removed = this.model.dropAt(lPos, item);
+        if (removed) {
+          this.clearAt2(removed);
+        }
       }
       if (ovwStatus != OverwriteStatus.Locked) {
-        var left = 1 + this.pointer.cx;
+        var left = 1 + cellX * this.config.unitWidth;
         var top = 1 + cellY * this.config.unitHeight;
 
-        this.model.put(item, cellY);
-        this.context.strokeStyle = this.editor.themeCol.darken().toString();
+        this.model.put(item, lPos);
+        this.context.strokeStyle = this.config.themeCol.darken().toString();
         item.draw(this.context, new canvas_tools.Pointer(left, top));
         this.context.stroke();
       }
     }
     tryRmv(pos :canvas_tools.Pos) :PlateItem {
+      var cellX = Math.floor(pos.x / this.config.unitWidth);
       var cellY = Math.floor(pos.y / this.config.unitHeight);
-
-      var itemAt = this.model.dropAt(cellY);
-      if (itemAt) {
-        this.clearAt(itemAt.at, itemAt.item);
+      var lPos = {
+        lx: cellX,
+        ly: cellY
       }
-      return itemAt.item;
+      var itemAt = this.model.dropAt(lPos);
+      if (itemAt) {
+        this.clearAt2(itemAt);
+        return itemAt.item;
+      }
+      return null;
     }
-    clearAt(cellY :number, item :PlateItem) {
-      var left = 1 + this.pointer.cx;
+    clearAt(cellX :number, cellY :number, item :PlateItem) {
+      var left = 1 + cellX * this.config.unitWidth;
       var top = 1 + cellY * this.config.unitHeight;
-      var right = left + this.config.plateWidth - 2;
-      var bottom = top + item.height - 2;
-      this.context.clearRect(left, top, right - left, bottom - top);
+      var width = item.width - 2;
+      var height = item.height - 2;
+      this.context.clearRect(left, top, width, height);
       this.drawLadder();
+    }
+    clearAt2(itemAt :PlateItemAt) {
+      this.clearAt(itemAt.at.lx, itemAt.at.ly, itemAt.item);
     }
   }
 }
