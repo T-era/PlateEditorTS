@@ -1,4 +1,4 @@
-module canvas_tools {
+module tools {
   export class Color {
     r :number;
     g :number;

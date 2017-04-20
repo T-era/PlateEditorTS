@@ -1,5 +1,5 @@
 DEST_DIR=../dest
-TARGETS=("canvas_tools" "hover" "plates" "test")
+TARGETS=("tools" "hover" "plates" "scroll" "test")
 
 # Prepare TypeScript d files.
 ./dbuild.sh
@@ -8,7 +8,6 @@ TARGETS=("canvas_tools" "hover" "plates" "test")
 for fld in ${TARGETS[@]}; do
   tsc --out $DEST_DIR/$fld.js ts/$fld/main.ts
 done
-tsc --out $DEST_DIR/mz_main.js ts/main.ts
 
 # Copy static files.
 cp static/* $DEST_DIR/

@@ -1,8 +1,8 @@
-/// <reference path='../../lib/canvas_tools.d.ts' />
+/// <reference path='../../lib/tools.d.ts' />
 
 module hover {
   export interface Hover {
-    setHoverImage(drawImg :canvas_tools.Drawing);
+    setHoverImage(drawImg :tools.Drawing);
     setHover(hovering :boolean);
     save();
     update<T>(f :() => T) :T;
@@ -10,7 +10,7 @@ module hover {
   export function newHover(canvas :HTMLCanvasElement) :Hover {
     return new _Hover(canvas);
   }
-  var HOVERING_CONF :canvas_tools.DrawConfig = {
+  var HOVERING_CONF :tools.DrawConfig = {
     alpha: 0.8,
     shadow: {
       blur: 3,
@@ -21,7 +21,7 @@ module hover {
     isHovering :boolean = true;
     canvas :HTMLCanvasElement;
     context :CanvasRenderingContext2D;
-    drawImg :canvas_tools.Drawing;
+    drawImg :tools.Drawing;
     savePoint :ImageData;
 
     constructor(canvas :HTMLCanvasElement) {
@@ -32,7 +32,7 @@ module hover {
 
       canvas.onmousemove = function(e :MouseEvent) {
         if (that.isHovering && that.drawImg) {
-          var pointer = canvas_tools.toPointer(e, canvas);
+          var pointer = tools.toPointer(e, canvas);
 
           that._restore();
           that.drawImg(that.context, pointer, HOVERING_CONF);
@@ -43,7 +43,7 @@ module hover {
       }
     }
 
-    setHoverImage(drawImg :canvas_tools.Drawing) {
+    setHoverImage(drawImg :tools.Drawing) {
       this.drawImg = drawImg;
       this._restore();
     }

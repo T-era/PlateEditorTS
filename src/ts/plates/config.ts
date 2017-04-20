@@ -1,4 +1,4 @@
-/// <reference path='../../lib/canvas_tools.d.ts' />
+/// <reference path='../../lib/tools.d.ts' />
 
 module plates {
   export interface Config {
@@ -7,29 +7,28 @@ module plates {
     editorWidth :number;
     editorHeight :number;
     selections :PlateItem[];
-    themeCol :canvas_tools.Color;
+    themeCol :tools.Color;
   }
-  export class PlateItem implements canvas_tools.CanvasItem {
-    drawPath :canvas_tools.Drawing;
-    width :number;
-    height :number;
-    pointer :canvas_tools.Pointer;
-    drawConfig :canvas_tools.DrawConfig;
+  export class PlateItem implements tools.CanvasItem {
+    context :CanvasRenderingContext2D;
+    drawPath :tools.Drawing;
+    size :tools.Size;
+    pointer :tools.Pointer;
+    drawConfig :tools.DrawConfig;
 
-    constructor(drawPath :canvas_tools.Drawing, pointer :canvas_tools.Pointer, width :number, height :number, drawConfig? :canvas_tools.DrawConfig) {
+    constructor(context :CanvasRenderingContext2D, drawPath :tools.Drawing, pointer :tools.Pointer, size :tools.Size, drawConfig? :tools.DrawConfig) {
+      this.context = context;
       this.drawPath = drawPath;
       this.pointer = pointer;
-      this.width = width
-      this.height = height;
+      this.size = size;
       this.drawConfig = drawConfig;
     }
-    draw(context :CanvasRenderingContext2D, at :canvas_tools.Pointer, drawConfig? :canvas_tools.DrawConfig) {
-      this.drawPath(context, at, canvas_tools.mergeConfig(drawConfig, this.drawConfig));
+    draw(at :tools.Pointer, drawConfig? :tools.DrawConfig) {
+      this.drawPath(this.context, at, tools.mergeConfig(drawConfig, this.drawConfig));
     }
 
-    isOn(pos :canvas_tools.Pos) :boolean {
-      return 0 <= pos.x && pos.x <= this.width
-          && 0 <= pos.y && pos.y <= this.height;
+    redraw() {
+      this.drawPath(this.context, this.pointer, this.drawConfig);
     }
   }
 }

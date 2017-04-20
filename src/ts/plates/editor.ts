@@ -1,14 +1,13 @@
-/// <reference path='../../lib/canvas_tools.d.ts'/>
+/// <reference path='../../lib/tools.d.ts'/>
 /// <reference path='editor_model.ts'/>
 
 module plates {
-  export interface Editor extends canvas_tools.CanvasItem{
+  export interface Editor extends tools.CanvasItem{
     model :EditorModel;
-    tryAdd(item :PlateItem, pos :canvas_tools.Pos);
-    tryRmv(pos :canvas_tools.Pos) :PlateItem;
+    tryAdd(item :PlateItem, pos :tools.Pos);
+    tryRmv(pos :tools.Pos) :PlateItem;
 
-    draw();
-    isOn(pos :canvas_tools.Pos) :boolean;
+    redraw();
   }
   export function newEditor(canvas :HTMLCanvasElement,
       context :CanvasRenderingContext2D,
@@ -16,13 +15,14 @@ module plates {
       getOnMouse :() => PlateItem) :Editor{
     return new _Editor(canvas, context, config, getOnMouse);
   }
-  var SHADOW_ON_SUGGESTION :canvas_tools.Shadow = {
+  var SHADOW_ON_SUGGESTION :tools.Shadow = {
       blur: 20,
       offsetX: 20,
       offsetY: 30 };
 
   class _Editor implements Editor {
-    pointer :canvas_tools.Pointer;
+    pointer :tools.Pointer;
+    size :tools.Size;
     model :EditorModel;
 
     canvas :HTMLCanvasElement;
@@ -34,7 +34,11 @@ module plates {
         context :CanvasRenderingContext2D,
         config :Config,
         getOnMouse :() => PlateItem) {
-      this.pointer = new canvas_tools.Pointer(0, 0);
+      this.pointer = new tools.Pointer(0, 0);
+      this.size = {
+        width: canvas.width,
+        height: canvas.height
+      };
       this.canvas = canvas;
       this.context = context;
       this.config = config;
@@ -42,14 +46,14 @@ module plates {
       this.model = newEditorModel(config);
       var that = this;
 
-      canvas.onmousemove = canvas_tools.event_chain(canvas.onmousemove, function(e) {
-        var pointer = canvas_tools.toPointer(e, canvas);
+      canvas.onmousemove = tools.event_chain(canvas.onmousemove, function(e) {
+        var pointer = tools.toPointer(e, canvas);
         that.onMouseMove(pointer);
       });
     }
-    onMouseMove(pointer :canvas_tools.Pointer) {
+    onMouseMove(pointer :tools.Pointer) {
       var pos = pointer.at(this);
-      if (this.isOn(pos)) {
+      if (tools.isOn(pos, this)) {
         var cellX = Math.floor(pos.x / this.config.unitWidth);
         var cellY = Math.floor(pos.y / this.config.unitHeight);
         if (cellX >= 0 && cellY >= 0) {
@@ -62,24 +66,24 @@ module plates {
               shadow: SHADOW_ON_SUGGESTION };
             var duplicated = this.model.getDuplicated(om, { lx: cellX, ly: cellY });
             if (duplicated.length === 0) {
-              om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), suggestionConfig);
+              om.draw(new tools.Pointer(cellX * this.config.unitWidth, cellY * this.config.unitHeight), suggestionConfig);
             } else if (duplicated.length === 1) {
               var replacementConfig = {
-                strokeColor: this.config.themeCol.ish(canvas_tools.RED),
-                fillColor: this.config.themeCol.ish(canvas_tools.RED),
+                strokeColor: this.config.themeCol.ish(tools.RED),
+                fillColor: this.config.themeCol.ish(tools.RED),
                 shadow: SHADOW_ON_SUGGESTION };
-              om.draw(this.context, new canvas_tools.Pointer(1 + cellX * this.config.unitWidth, 1 + cellY * this.config.unitHeight), suggestionConfig);
+              om.draw(new tools.Pointer(cellX * this.config.unitWidth, cellY * this.config.unitHeight), suggestionConfig);
               var replacementAt = duplicated[0];
               var repItem = replacementAt.item;
               var repAt = replacementAt.at;
-              repItem.draw(this.context, new canvas_tools.Pointer(1 + repAt.lx * this.config.unitWidth, 1 + repAt.ly * this.config.unitHeight), replacementConfig);
+              repItem.draw(new tools.Pointer(repAt.lx * this.config.unitWidth, repAt.ly * this.config.unitHeight), replacementConfig);
             }
           }
         }
       }
     }
 
-    draw() {
+    redraw() {
       this.drawLadder();
     }
     drawLadder() {
@@ -91,16 +95,16 @@ module plates {
         strokeColor: config.themeCol.lighten(),
         lineDash: [3,3]
       };
-      for (var x = config.unitWidth + 1; x < config.editorWidth; x += config.unitWidth) {
-        canvas_tools.line(context,
-          new canvas_tools.Pointer(x, 0),
-          new canvas_tools.Pointer(x, config.editorHeight),
+      for (var x = config.unitWidth; x < config.editorWidth; x += config.unitWidth) {
+        tools.line(context,
+          new tools.Pointer(x, 0),
+          new tools.Pointer(x, config.editorHeight),
           ladderHConfig);
       }
-      for (var y = config.unitHeight + 1; y < config.editorHeight;  y += config.unitHeight) {
-        canvas_tools.line(context,
-          new canvas_tools.Pointer(0, y),
-          new canvas_tools.Pointer(config.editorWidth, y),
+      for (var y = config.unitHeight; y < config.editorHeight;  y += config.unitHeight) {
+        tools.line(context,
+          new tools.Pointer(0, y),
+          new tools.Pointer(config.editorWidth, y),
           ladderHConfig);
       }
       context.stroke();
@@ -113,22 +117,18 @@ module plates {
       var items = model.list();
       for (var cellY = 0, maxY = items.length; cellY < maxY; cellY ++) {
         for (var cellX = 0, maxX = items[cellY].length; cellX < maxX; cellX ++) {
-          var y = 1 + cellY * config.unitHeight;
-          var x = 1 + cellX * config.unitWidth;
+          var y = cellY * config.unitHeight;
+          var x = cellX * config.unitWidth;
           var itemAt = items[cellY][cellX];
           if (itemAt && itemAt.at.lx == cellX && itemAt.at.ly == cellY) {
             var item = itemAt.item;
-            item.drawPath(context, new canvas_tools.Pointer(x, y), item.drawConfig);
+            item.drawPath(context, new tools.Pointer(x, y), item.drawConfig);
           }
         }
       }
     }
 
-    isOn(pos :canvas_tools.Pos) :boolean {
-      return 0 <= pos.x && pos.x < this.config.editorWidth
-          && 0 <= pos.y && pos.y < this.config.editorHeight;
-    }
-    tryAdd(item :PlateItem, pos :canvas_tools.Pos) {
+    tryAdd(item :PlateItem, pos :tools.Pos) {
       var cellX = Math.floor(pos.x / this.config.unitWidth);
       var cellY = Math.floor(pos.y / this.config.unitHeight);
       var lPos = {
@@ -145,16 +145,16 @@ module plates {
         }
       }
       if (duplicated.length <= 1) {
-        var left = 1 + cellX * this.config.unitWidth;
-        var top = 1 + cellY * this.config.unitHeight;
+        var left = cellX * this.config.unitWidth;
+        var top = cellY * this.config.unitHeight;
 
         this.model.put(item, lPos);
         this.context.strokeStyle = this.config.themeCol.darken().toString();
-        item.draw(this.context, new canvas_tools.Pointer(left, top));
+        item.draw(new tools.Pointer(left, top));
         this.context.stroke();
       }
     }
-    tryRmv(pos :canvas_tools.Pos) :PlateItem {
+    tryRmv(pos :tools.Pos) :PlateItem {
       var cellX = Math.floor(pos.x / this.config.unitWidth);
       var cellY = Math.floor(pos.y / this.config.unitHeight);
       var lPos = {
@@ -171,7 +171,7 @@ module plates {
     clearAt(cellX :number, cellY :number, item :PlateItem) {
       var left = cellX * this.config.unitWidth;
       var top = cellY * this.config.unitHeight;
-      this.context.clearRect(left, top, item.width, item.height);
+      this.context.clearRect(left, top, item.size.width, item.size.height);
       this.drawLadder();
     }
     clearAt2(itemAt :PlateItemAt) {

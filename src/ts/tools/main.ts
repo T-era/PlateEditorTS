@@ -3,3 +3,4 @@
 /// <reference path='helpers.ts' />
 /// <reference path='color.ts' />
 /// <reference path='drawing.ts' />
+/// <reference path='item.ts' />

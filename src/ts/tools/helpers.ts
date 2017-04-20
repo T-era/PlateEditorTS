@@ -1,6 +1,6 @@
 /// <reference path='color.ts' />
 
-module canvas_tools {
+module tools {
   export interface Shadow {
     color ?:Color;
     blur :number;
@@ -9,6 +9,7 @@ module canvas_tools {
   }
   export interface DrawConfig {
     lineWidth ?:number;
+    lineCap ?:string;
     lineDash ?:number[];
     strokeColor ?:Color;
     fillColor ?:Color;
@@ -17,6 +18,7 @@ module canvas_tools {
   }
   var DEFAULT :DrawConfig = {
     lineWidth: 1,
+    lineCap: 'butt',
     lineDash: [],
     strokeColor: BLACK,
     fillColor: BLACK,
@@ -40,6 +42,7 @@ module canvas_tools {
     } else {
       return {
         lineWidth: getValue('lineWidth'),
+        lineCap: getValue('lineCap'),
         lineDash: getValue('lineDash'),
         strokeColor: getValue('strokeColor'),
         fillColor: getValue('fillColor'),
@@ -56,6 +59,7 @@ module canvas_tools {
   function apply(context :CanvasRenderingContext2D, config? :DrawConfig) {
     var ex = completeDefault(config);
     context.lineWidth = ex.lineWidth;
+    context.lineCap = ex.lineCap;
     context.setLineDash(ex.lineDash);
     if (ex.shadow) {
       if (ex.shadow.color) {
@@ -83,7 +87,7 @@ module canvas_tools {
   }
   export function rect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config :DrawConfig) {
     apply(context, config);
-    context.strokeRect(leftTop.cx, leftTop.cy, width, height);
+    context.rect(leftTop.cx, leftTop.cy, width, height);
   }
   export function fillRect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config :DrawConfig) {
     apply(context, config);

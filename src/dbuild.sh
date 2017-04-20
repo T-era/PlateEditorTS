@@ -1,7 +1,7 @@
 LIB_DIR=lib
-TARGETS=("canvas_tools" "hover" "plates")
+TARGETS=("tools" "hover" "plates" "scroll")
 
 # Compile TypeScript code.
 for fld in ${TARGETS[@]}; do
-  tsc -d --out $LIB_DIR/$fld.d.ts ts/$fld/main.ts
+  tsc -d --out $LIB_DIR/$fld ts/$fld/main.ts
 done

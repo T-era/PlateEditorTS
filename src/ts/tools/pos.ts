@@ -1,10 +1,4 @@
-module canvas_tools {
-  // Canvas内のアイテムが満たすべきI/F TODO 不要？？
-  export interface CanvasItem {
-    pointer :canvas_tools.Pointer;
-    // 指定された座標が、このアイテムの上であるかどうか
-    isOn(pos :canvas_tools.Pos) :boolean;
-  }
+module tools {
 
   // Canvas内に置かれたCanvasItem内での座標。
   export class Pos {
@@ -19,6 +13,9 @@ module canvas_tools {
     }
     toString() :string {
       return '(' + this.x + ', ' + this.y + ')';
+    }
+    pointer() :Pointer {
+      return new Pointer(this.x + this.owner.pointer.cx, this.y + this.owner.pointer.cy);
     }
   }
   // Canvas内での座標。
