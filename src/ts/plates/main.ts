@@ -53,7 +53,7 @@ module plates {
     holdOnMouse(pointer :tools.Pointer) :PlateItem {
       var editor = this.editor;
       var pos = pointer.at(editor);
-      if (tools.isOn(pos, editor)) {
+      if (this.isOnEditor(pos)) {
         return this.hover.update(function() {
           return editor.tryRmv(pos);
         });
@@ -64,11 +64,15 @@ module plates {
       var editor = this.editor;
 
       var pos = pointer.at(editor);
-      if (tools.isOn(pos, editor)) {
+      if (this.isOnEditor(pos)) {
         this.hover.update(function() {
           editor.tryAdd(item, pos);
         });
       }
+    }
+    isOnEditor(pos :tools.Pos) :boolean {
+      return 0 <= pos.x && pos.x < this.config.editorWidth
+          && 0 <= pos.y && pos.y < this.config.editorHeight;
     }
   }
 }

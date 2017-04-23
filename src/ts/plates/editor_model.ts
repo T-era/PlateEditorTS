@@ -93,7 +93,7 @@ module plates {
           return null;
         }
       } else {
-        target = this.listContents[lPos.ly][lPos.lx]
+        target = this._get(lPos);
       }
       if (target != null) {
         var item = target.item;
