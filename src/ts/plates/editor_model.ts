@@ -10,6 +10,8 @@ module plates {
     at :LogicalPos;
   }
   export interface EditorModel {
+    maxX :number;
+    maxY :number;
     getDuplicated(item :PlateItem, lPos :LogicalPos) :PlateItemAt[];
 
     put(item :PlateItem, lPos :LogicalPos);

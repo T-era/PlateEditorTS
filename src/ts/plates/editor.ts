@@ -59,24 +59,26 @@ module plates {
         if (cellX >= 0 && cellY >= 0) {
           var om = this.getOnMouse();
           if (om) {
-            var suggestionConfig = {
-              strokeColor: this.config.themeCol.lighten(),
-              fillColor: this.config.themeCol.lighten().lighten(),
-              alpha: 0.5,
-              shadow: SHADOW_ON_SUGGESTION };
-            var duplicated = this.model.getDuplicated(om, { lx: cellX, ly: cellY });
-            if (duplicated.length === 0) {
-              om.draw(new tools.Pointer(cellX * this.config.unitWidth, cellY * this.config.unitHeight), suggestionConfig);
-            } else if (duplicated.length === 1) {
-              var replacementConfig = {
-                strokeColor: this.config.themeCol.ish(tools.RED),
-                fillColor: this.config.themeCol.ish(tools.RED),
+            if (this.isInRange(om, cellX, cellY)) {
+              var suggestionConfig = {
+                strokeColor: this.config.themeCol.lighten(),
+                fillColor: this.config.themeCol.lighten().lighten(),
+                alpha: 0.5,
                 shadow: SHADOW_ON_SUGGESTION };
-              om.draw(new tools.Pointer(cellX * this.config.unitWidth, cellY * this.config.unitHeight), suggestionConfig);
-              var replacementAt = duplicated[0];
-              var repItem = replacementAt.item;
-              var repAt = replacementAt.at;
-              repItem.draw(new tools.Pointer(repAt.lx * this.config.unitWidth, repAt.ly * this.config.unitHeight), replacementConfig);
+              var duplicated = this.model.getDuplicated(om, { lx: cellX, ly: cellY });
+              if (duplicated.length === 0) {
+                om.draw(new tools.Pointer(cellX * this.config.unitWidth, cellY * this.config.unitHeight), suggestionConfig);
+              } else if (duplicated.length === 1) {
+                var replacementConfig = {
+                  strokeColor: this.config.themeCol.ish(tools.RED),
+                  fillColor: this.config.themeCol.ish(tools.RED),
+                  shadow: SHADOW_ON_SUGGESTION };
+                om.draw(new tools.Pointer(cellX * this.config.unitWidth, cellY * this.config.unitHeight), suggestionConfig);
+                var replacementAt = duplicated[0];
+                var repItem = replacementAt.item;
+                var repAt = replacementAt.at;
+                repItem.draw(new tools.Pointer(repAt.lx * this.config.unitWidth, repAt.ly * this.config.unitHeight), replacementConfig);
+              }
             }
           }
         }
@@ -137,22 +139,28 @@ module plates {
       };
 
       this.context.beginPath();
-      var duplicated = this.model.getDuplicated(item, lPos);
-      if (duplicated.length === 1) {
-        var removed = this.model.dropAt(lPos, item);
-        if (removed) {
-          this.clearAt2(removed);
+      if (this.isInRange(item, cellX, cellY)) {
+        var duplicated = this.model.getDuplicated(item, lPos);
+        if (duplicated.length === 1) {
+          var removed = this.model.dropAt(lPos, item);
+          if (removed) {
+            this.clearAt2(removed);
+          }
+        }
+        if (duplicated.length <= 1) {
+          var left = cellX * this.config.unitWidth;
+          var top = cellY * this.config.unitHeight;
+
+          this.model.put(item, lPos);
+          this.context.strokeStyle = this.config.themeCol.darken().toString();
+          item.draw(new tools.Pointer(left, top));
+          this.context.stroke();
         }
       }
-      if (duplicated.length <= 1) {
-        var left = cellX * this.config.unitWidth;
-        var top = cellY * this.config.unitHeight;
-
-        this.model.put(item, lPos);
-        this.context.strokeStyle = this.config.themeCol.darken().toString();
-        item.draw(new tools.Pointer(left, top));
-        this.context.stroke();
-      }
+    }
+    isInRange(item :PlateItem, cellX :number, cellY :number) {
+      return 0 <= cellX && cellX < this.model.maxX - Math.ceil(item.size.width / this.config.unitWidth) + 1
+          && 0 <= cellY && cellY < this.model.maxY - Math.ceil(item.size.height / this.config.unitHeight) + 1;
     }
     tryRmv(pos :tools.Pos) :PlateItem {
       var cellX = Math.floor(pos.x / this.config.unitWidth);
