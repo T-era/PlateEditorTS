@@ -74,7 +74,7 @@ module scroll {
       var childSizeAt = this.howGetChildSizeAt();
       var min = lMin * (sizeAt - 4) / childSizeAt;  // 両端2づつは、lineCapが消費する。
       var max = lMax * (sizeAt - 4) / childSizeAt;  // 両端2づつは、lineCapが消費する。
-      if (sizeAt < childSizeAt) {
+      if (lMax < childSizeAt) {
         this.howDraw(this.anotherAxis, min, max);
       }
     }
