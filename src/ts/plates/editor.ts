@@ -102,7 +102,6 @@ module plates {
       var context = this.context;
       var config = this.config;
 
-      context.beginPath();
       var ladderHConfig = {
         strokeColor: config.themeCol.lighten(),
         lineDash: [3,3]
@@ -119,7 +118,6 @@ module plates {
           new tools.Pointer(this.pointer.cx + config.editorSize.width, this.pointer.cy + y),
           ladderHConfig);
       }
-      context.stroke();
     }
 
     drawItems() {
@@ -149,7 +147,6 @@ module plates {
         ly: cellY
       };
 
-      this.context.beginPath();
       if (this.isInRange(item, cellX, cellY)) {
         var duplicated = this.model.getDuplicated(item, lPos);
         if (duplicated.length === 1) {
@@ -163,9 +160,6 @@ module plates {
           var top = cellY * this.config.unitSize.height;
 
           this.model.put(item, lPos);
-          this.context.strokeStyle = this.config.themeCol.darken().toString();
-          item.draw(new tools.Pointer(left, top));
-          this.context.stroke();
         }
       }
     }

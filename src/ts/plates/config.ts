@@ -7,6 +7,7 @@ module plates {
     editorShowSize :tools.Size;
     selections :PlateItem[];
     themeCol :tools.Color;
+    scrollFrameStyle :tools.DrawConfig;
   }
   export class PlateItem implements tools.CanvasItem {
     context :CanvasRenderingContext2D;

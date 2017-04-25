@@ -12,7 +12,8 @@ module plate_scroll_test {
       editorSize: { width: 100, height: 1200 },
       editorShowSize: {width: 100, height: 100 },
       selections: [],
-      themeCol: new tools.Color(0, 128, 0)
+      themeCol: new tools.Color(0, 128, 0),
+      scrollFrameStyle: { alpha: 0 }
     };
     config.selections = [
         new plates.PlateItem(context, rect, new tools.Pointer(150, 100), { width: 50, height: 30 }, {

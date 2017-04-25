@@ -19,9 +19,7 @@ module scroll {
       this._horizontal = new _ScrollBar(
         size.width - 3,
         function(x, min, max) {
-          context.beginPath();
           tools.line(context, new tools.Pos(x, min + 2, owner).pointer(), new tools.Pos(x, max + 2, owner).pointer(), SCROLLBAR_STYLE);
-          context.stroke();
         },
         function() { return config.scroll.pointer.cy; },
         function() { return config.scrollIn.pointer.cy; },
@@ -30,9 +28,7 @@ module scroll {
       this._vertical = new _ScrollBar(
         size.height - 3,
         function(y, min, max) {
-          context.beginPath();
           tools.line(context, new tools.Pos(min + 2, y, owner).pointer(), new tools.Pos(max + 2, y, owner).pointer(), SCROLLBAR_STYLE);
-          context.stroke();
         },
         function() { return config.scroll.pointer.cx; },
         function() { return config.scrollIn.pointer.cx; },

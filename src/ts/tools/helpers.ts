@@ -76,21 +76,33 @@ module tools {
     context.fillStyle = ex.fillColor.toString();
   }
 
-  export function line(context :CanvasRenderingContext2D, from :Pointer, to :Pointer, config :DrawConfig) {
+  function draw(context :CanvasRenderingContext2D, config :DrawConfig, f :() => void) {
     apply(context, config);
-    context.moveTo(from.cx, from.cy);
-    context.lineTo(to.cx, to.cy);
+    context.beginPath();
+    f();
+    context.stroke();
+  }
+
+  export function line(context :CanvasRenderingContext2D, from :Pointer, to :Pointer, config :DrawConfig) {
+    draw(context, config, function() {
+      context.moveTo(from.cx, from.cy);
+      context.lineTo(to.cx, to.cy);
+    });
   }
   export function circle(context :CanvasRenderingContext2D, center :Pointer, r :number, config :DrawConfig) {
-    apply(context, config);
-    context.arc(center.cx, center.cy, r, 0, 2 * Math.PI, false);
+    draw(context, config, function() {
+      context.arc(center.cx, center.cy, r, 0, 2 * Math.PI, false);
+    });
   }
   export function rect(context :CanvasRenderingContext2D, leftTop :Pointer, size :Size, config :DrawConfig) {
-    apply(context, config);
-    context.rect(leftTop.cx, leftTop.cy, size.width, size.height);
+    draw(context, config, function() {
+      context.rect(leftTop.cx, leftTop.cy, size.width, size.height);
+    });
   }
   export function fillRect(context :CanvasRenderingContext2D, leftTop :Pointer, size :Size, config :DrawConfig) {
-    apply(context, config);
-    context.fillRect(leftTop.cx, leftTop.cy, size.width, size.height);
+    draw(context, config, function() {
+      context.fillRect(leftTop.cx, leftTop.cy, size.width, size.height);
+    });
+    context.fill();
   }
 }

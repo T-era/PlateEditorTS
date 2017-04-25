@@ -35,7 +35,7 @@ module plates {
           pointer: this.pointer,
           size: config.editorShowSize,
           redraw: function() {
-            tools.rect(that.context, that.pointer, config.editorShowSize, null);
+            tools.rect(that.context, that.pointer, config.editorShowSize, config.scrollFrameStyle);
           } },
         scrollIn: this.editor,
         viscosity: 0.95 });
@@ -50,12 +50,10 @@ module plates {
           that.onMouse = that.holdOnMouse(pointer);
           if (that.onMouse) {
             that.hover.setHoverImage(function(context :CanvasRenderingContext2D, pointer :tools.Pointer, drawConfig? :tools.DrawConfig) {
-              context.beginPath();
-              var toCenter = new tools.Pointer(
+              var center = new tools.Pointer(
                 pointer.cx - Math.ceil(that.config.unitSize.width / 2),
                 pointer.cy - Math.ceil(that.config.unitSize.height / 2));
-              that.onMouse.draw(toCenter, drawConfig);
-              context.stroke();
+              that.onMouse.draw(center, drawConfig);
             }, e);
           }
         }
@@ -65,9 +63,7 @@ module plates {
       var editor = this.editor;
       var pos = pointer.at(editor);
       if (this.isOnEditor(pos)) {
-        return this.hover.update(function() {
-          return editor.tryRmv(pos);
-        });
+        return editor.tryRmv(pos);
       }
       return this.pallet.getSelection(pointer);
     }
@@ -76,9 +72,7 @@ module plates {
 
       var pos = pointer.at(editor);
       if (this.isOnEditor(pos)) {
-        this.hover.update(function() {
-          editor.tryAdd(item, pos);
-        });
+        editor.tryAdd(item, pos);
       }
     }
     isOnEditor(pos :tools.Pos) :boolean {

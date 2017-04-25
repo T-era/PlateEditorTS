@@ -91,15 +91,13 @@ module scroll {
       var area = this.size;
       this.context.clearRect(p.cx, p.cy, area.width, area.height);
 
-      this.context.beginPath();
       // clip領域のパスを設定
+      this.context.beginPath();
       this.config.scroll.redraw();
       this.context.save();
       this.context.clip();
       {
-        this.context.beginPath();
         this.config.scrollIn.redraw(p, area);
-        this.context.stroke();
       }
       this.context.restore();
       if (this.scrollStepping || this.scrollRunning) {

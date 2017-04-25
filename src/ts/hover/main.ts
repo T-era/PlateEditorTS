@@ -7,7 +7,6 @@ module hover {
 
     /** hovering: true で e を渡せば、即ホバーを描画する。e を省略した場合は次のイベントまで描画しない。 **/
     setHover(hovering :boolean, e ?:MouseEvent);
-    update<T>(f :() => T) :T;
   }
   export function newHover(canvas :HTMLCanvasElement, redraw: () => void) :Hover {
     return new _Hover(canvas, redraw);
@@ -49,36 +48,26 @@ module hover {
 
     setHoverImage(drawImg :tools.Drawing, e ?:MouseEvent) {
       this.drawImg = drawImg;
-      this._restore();
-      if (e && drawImg) {
+      this._restore()
+      this._drawAt(e);
+    }
+    setHover(hovering :boolean, e ?:MouseEvent) {
+      this.isHovering = hovering;
+      this._restore()
+      if (this.isHovering) {
+        this._drawAt(e);
+      }
+    }
+    _drawAt(e :MouseEvent) {
+      if (e && this.drawImg) {
         var pointer = tools.toPointer(e, this.canvas);
         this.drawImg(this.context, pointer, HOVERING_CONF);
       }
     }
-    setHover(hovering :boolean, e ?:MouseEvent) {
-      this.isHovering = hovering;
-      if (this.isHovering) {
-        if (e && this.drawImg) {
-          this._restore();
-          var pointer = tools.toPointer(e, this.canvas);
-          this.drawImg(this.context, pointer, HOVERING_CONF);
-        }
-      } else {
-        this._restore()
-      }
-    }
 
-    setRedraw(redraw :() => void) {
-      this.redraw = redraw;
-    }
     _restore() {
       this.context.clearRect(0,0,this.canvas.width, this.canvas.height);
       this.redraw();
-    }
-    update(f :() => void) {
-      this.redraw();
-      var ret = f();
-      return ret;
     }
   }
 }

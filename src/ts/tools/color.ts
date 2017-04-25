@@ -10,9 +10,9 @@ module tools {
     }
     lighten() :Color {
       return new Color(
-        Math.ceil(255 - (255 - this.r) / 4),
-        Math.ceil(255 - (255 - this.g) / 4),
-        Math.ceil(255 - (255 - this.b) / 4));
+        Math.ceil(255 - (255 - this.r) / 2),
+        Math.ceil(255 - (255 - this.g) / 2),
+        Math.ceil(255 - (255 - this.b) / 2));
     }
     darken() :Color {
       return new Color(
