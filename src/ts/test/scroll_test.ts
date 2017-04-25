@@ -13,7 +13,7 @@ module scroll_test{
       scrollIn: item,
       viscosity: 0.96
     };
-    new scroll.Scroll(cnv, context, scrCnf);
+    new scroll.Scroll(cnv, context, scrCnf).redraw();
   }
 
   class Scroller implements tools.CanvasItem {

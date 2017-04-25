@@ -5,7 +5,9 @@
 /// <reference path='pallet.ts' />
 
 module plates {
-  export class PlateEditor {
+  export class PlateEditor implements tools.CanvasItem {
+    pointer :tools.Pointer = new tools.Pointer(0, 0);
+    size :tools.Size;
     canvas :HTMLCanvasElement;
     context :CanvasRenderingContext2D;
     hover :hover.Hover;
@@ -18,17 +20,15 @@ module plates {
       var that = this;
       this.canvas = canvas;
       this.context = canvas.getContext('2d');
-      this.hover = hover.newHover(canvas);
+      this.hover = hover.newHover(canvas, function() { that.redraw(); });
       this.config = config;
+      this.size = canvas;
 
-      var palletAt = new tools.Pointer(config.editorWidth + 2,0);
+      var palletAt = new tools.Pointer(config.editorSize.width + 2,0);
       this.pallet = new Pallet(canvas, this.context, config, palletAt);
-      this.pallet.drawItems();
 
       this.editor = newEditor(canvas, that.context, config, function() { return that.onMouse; });
-      this.editor.redraw();
 
-      this.hover.save();
       this.canvas.onclick = function(e :MouseEvent) {
         var pointer = tools.toPointer(e, that.canvas);
         if (that.onMouse) {
@@ -41,11 +41,11 @@ module plates {
             that.hover.setHoverImage(function(context :CanvasRenderingContext2D, pointer :tools.Pointer, drawConfig? :tools.DrawConfig) {
               context.beginPath();
               var toCenter = new tools.Pointer(
-                pointer.cx - Math.ceil(that.config.unitWidth / 2),
-                pointer.cy - Math.ceil(that.config.unitHeight / 2));
+                pointer.cx - Math.ceil(that.config.unitSize.width / 2),
+                pointer.cy - Math.ceil(that.config.unitSize.height / 2));
               that.onMouse.draw(toCenter, drawConfig);
               context.stroke();
-            });
+            }, e);
           }
         }
       };
@@ -71,8 +71,13 @@ module plates {
       }
     }
     isOnEditor(pos :tools.Pos) :boolean {
-      return 0 <= pos.x && pos.x < this.config.editorWidth
-          && 0 <= pos.y && pos.y < this.config.editorHeight;
+      return 0 <= pos.x && pos.x < this.config.editorSize.width
+          && 0 <= pos.y && pos.y < this.config.editorSize.height;
+    }
+
+    redraw() {
+      this.editor.redraw();
+      this.pallet.redraw();
     }
   }
 }

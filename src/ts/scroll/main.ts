@@ -39,7 +39,7 @@ module scroll {
 
       var that = this;
 
-      canvas.onmousemove = function(e :MouseEvent) {
+      canvas.onmousemove = tools.event_chain(canvas.onmousemove, function(e :MouseEvent) {
         var pointer = tools.toPointer(e, canvas);
         if (that.scrollStepping)  {
           that.scrollingSpeed = that.getSpeed(pointer, that.mousePointer);
@@ -47,19 +47,18 @@ module scroll {
         }
         that.mousePointer = pointer;
         that.redraw();
-      };
-      canvas.onmousedown = function(e :MouseEvent) {
+      });
+      canvas.onmousedown = tools.event_chain(canvas.onmousedown, function(e :MouseEvent) {
         that.scrollStepping = true;
         that.scrollRunning = false;
-      };
-      canvas.onmouseup = function(e :MouseEvent) {
+      });
+      canvas.onmouseup = tools.event_chain(canvas.onmouseup, function(e :MouseEvent) {
         that.scrollStepping = false;
         if (that.scrollingSpeed.dx != 0 || that.scrollingSpeed.dy != 0) {
           that.scrollRunning = true;
           that.running();
         }
-      };
-      this.redraw();
+      });
     }
     getSpeed(current :tools.Pointer, past :tools.Pointer) :Speed {
       var dx = (this.size.width >= this.config.scrollIn.size.width
@@ -90,7 +89,7 @@ module scroll {
     redraw() {
       var p = this.pointer;
       var area = this.size;
-      this.context.clearRect(p.cx, p.cy, this.canvas.width, this.canvas.height);
+      this.context.clearRect(p.cx, p.cy, this.size.width, this.size.height);
 
       this.context.beginPath();
       // clip領域のパスを設定

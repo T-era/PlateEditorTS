@@ -2,13 +2,15 @@
 
 module hover {
   export interface Hover {
-    setHoverImage(drawImg :tools.Drawing);
-    setHover(hovering :boolean);
-    save();
+    /** drawImg と e を渡せば、即ホバーを描画する。e を省略した場合は次のイベントまで描画しない。 **/
+    setHoverImage(drawImg :tools.Drawing, e ?:MouseEvent);
+
+    /** hovering: true で e を渡せば、即ホバーを描画する。e を省略した場合は次のイベントまで描画しない。 **/
+    setHover(hovering :boolean, e ?:MouseEvent);
     update<T>(f :() => T) :T;
   }
-  export function newHover(canvas :HTMLCanvasElement) :Hover {
-    return new _Hover(canvas);
+  export function newHover(canvas :HTMLCanvasElement, redraw: () => void) :Hover {
+    return new _Hover(canvas, redraw);
   }
   var HOVERING_CONF :tools.DrawConfig = {
     alpha: 0.8,
@@ -22,52 +24,60 @@ module hover {
     canvas :HTMLCanvasElement;
     context :CanvasRenderingContext2D;
     drawImg :tools.Drawing;
-    savePoint :ImageData;
+    redraw :() => void;
 
-    constructor(canvas :HTMLCanvasElement) {
+    constructor(canvas :HTMLCanvasElement, redraw: () => void) {
       var that = this;
       this.canvas = canvas;
       this.context = canvas.getContext('2d');
-      this.save();
+      this.redraw = redraw;
 
-      canvas.onmousemove = function(e :MouseEvent) {
+      canvas.onmousemove = tools.event_chain(canvas.onmousemove, function(e :MouseEvent) {
         if (that.isHovering && that.drawImg) {
           var pointer = tools.toPointer(e, canvas);
 
           that._restore();
-          that.drawImg(that.context, pointer, HOVERING_CONF);
+          setTimeout(function() {
+            that.drawImg(that.context, pointer, HOVERING_CONF);
+          }, 0);
         }
-      }
-      canvas.onmouseout = function(e :MouseEvent) {
+      });
+      canvas.onmouseout = tools.event_chain(canvas.onmouseout, function(e :MouseEvent) {
         that._restore();
-      }
+      });
     }
 
-    setHoverImage(drawImg :tools.Drawing) {
+    setHoverImage(drawImg :tools.Drawing, e ?:MouseEvent) {
       this.drawImg = drawImg;
       this._restore();
+      if (e && drawImg) {
+        var pointer = tools.toPointer(e, this.canvas);
+        this.drawImg(this.context, pointer, HOVERING_CONF);
+      }
     }
-    setHover(hovering :boolean) {
+    setHover(hovering :boolean, e ?:MouseEvent) {
       this.isHovering = hovering;
       if (this.isHovering) {
-        // TODO Draw (or not necessary?)
+        if (e && this.drawImg) {
+          this._restore();
+          var pointer = tools.toPointer(e, this.canvas);
+          this.drawImg(this.context, pointer, HOVERING_CONF);
+        }
       } else {
         this._restore()
       }
     }
 
-    save() {
-      var canvas = this.canvas;
-      var context = this.context;
-      this.savePoint = context.getImageData(0, 0, canvas.width, canvas.height);
+    setRedraw(redraw :() => void) {
+      this.redraw = redraw;
     }
     _restore() {
-      this.context.putImageData(this.savePoint, 0, 0);
+      this.context.clearRect(0,0,this.canvas.width, this.canvas.height);
+      this.redraw();
     }
     update(f :() => void) {
-      this._restore();
+      this.redraw();
       var ret = f();
-      this.save();
       return ret;
     }
   }

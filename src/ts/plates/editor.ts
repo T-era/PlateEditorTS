@@ -35,10 +35,7 @@ module plates {
         config :Config,
         getOnMouse :() => PlateItem) {
       this.pointer = new tools.Pointer(0, 0);
-      this.size = {
-        width: canvas.width,
-        height: canvas.height
-      };
+      this.size = config.editorSize;
       this.canvas = canvas;
       this.context = context;
       this.config = config;
@@ -54,8 +51,8 @@ module plates {
     onMouseMove(pointer :tools.Pointer) {
       var pos = pointer.at(this);
       if (tools.isOn(pos, this)) {
-        var cellX = Math.floor(pos.x / this.config.unitWidth);
-        var cellY = Math.floor(pos.y / this.config.unitHeight);
+        var cellX = Math.floor(pos.x / this.config.unitSize.width);
+        var cellY = Math.floor(pos.y / this.config.unitSize.height);
         if (cellX >= 0 && cellY >= 0) {
           var om = this.getOnMouse();
           if (om) {
@@ -87,6 +84,7 @@ module plates {
 
     redraw() {
       this.drawLadder();
+      this.drawItems();
     }
     drawLadder() {
       var context = this.context;
@@ -97,16 +95,16 @@ module plates {
         strokeColor: config.themeCol.lighten(),
         lineDash: [3,3]
       };
-      for (var x = config.unitWidth; x < config.editorWidth; x += config.unitWidth) {
+      for (var x = config.unitSize.width; x < config.editorSize.width; x += config.unitSize.width) {
         tools.line(context,
-          new tools.Pointer(x, 0),
-          new tools.Pointer(x, config.editorHeight),
+          new tools.Pointer(this.pointer.cx + x, this.pointer.cy),
+          new tools.Pointer(this.pointer.cx + x, this.pointer.cy + config.editorSize.height),
           ladderHConfig);
       }
-      for (var y = config.unitHeight; y < config.editorHeight;  y += config.unitHeight) {
+      for (var y = config.unitSize.height; y < config.editorSize.height;  y += config.unitSize.height) {
         tools.line(context,
-          new tools.Pointer(0, y),
-          new tools.Pointer(config.editorWidth, y),
+          new tools.Pointer(this.pointer.cx, this.pointer.cy + y),
+          new tools.Pointer(this.pointer.cx + config.editorSize.width, this.pointer.cy + y),
           ladderHConfig);
       }
       context.stroke();
@@ -118,9 +116,10 @@ module plates {
       var model = this.model;
       var items = model.list();
       for (var cellY = 0, maxY = items.length; cellY < maxY; cellY ++) {
+        if (! items[cellY]) { items[cellY] = []; }
         for (var cellX = 0, maxX = items[cellY].length; cellX < maxX; cellX ++) {
-          var y = cellY * config.unitHeight;
-          var x = cellX * config.unitWidth;
+          var x = this.pointer.cx + cellX * config.unitSize.width;
+          var y = this.pointer.cy + cellY * config.unitSize.height;
           var itemAt = items[cellY][cellX];
           if (itemAt && itemAt.at.lx == cellX && itemAt.at.ly == cellY) {
             var item = itemAt.item;
@@ -131,8 +130,8 @@ module plates {
     }
 
     tryAdd(item :PlateItem, pos :tools.Pos) {
-      var cellX = Math.floor(pos.x / this.config.unitWidth);
-      var cellY = Math.floor(pos.y / this.config.unitHeight);
+      var cellX = Math.floor(pos.x / this.config.unitSize.width);
+      var cellY = Math.floor(pos.y / this.config.unitSize.height);
       var lPos = {
         lx: cellX,
         ly: cellY
@@ -148,8 +147,8 @@ module plates {
           }
         }
         if (duplicated.length <= 1) {
-          var left = cellX * this.config.unitWidth;
-          var top = cellY * this.config.unitHeight;
+          var left = cellX * this.config.unitSize.width;
+          var top = cellY * this.config.unitSize.height;
 
           this.model.put(item, lPos);
           this.context.strokeStyle = this.config.themeCol.darken().toString();
@@ -159,12 +158,12 @@ module plates {
       }
     }
     isInRange(item :PlateItem, cellX :number, cellY :number) {
-      return 0 <= cellX && cellX < this.model.maxX - Math.ceil(item.size.width / this.config.unitWidth) + 1
-          && 0 <= cellY && cellY < this.model.maxY - Math.ceil(item.size.height / this.config.unitHeight) + 1;
+      return 0 <= cellX && cellX < this.model.maxX - Math.ceil(item.size.width / this.config.unitSize.width) + 1
+          && 0 <= cellY && cellY < this.model.maxY - Math.ceil(item.size.height / this.config.unitSize.height) + 1;
     }
     tryRmv(pos :tools.Pos) :PlateItem {
-      var cellX = Math.floor(pos.x / this.config.unitWidth);
-      var cellY = Math.floor(pos.y / this.config.unitHeight);
+      var cellX = Math.floor(pos.x / this.config.unitSize.width);
+      var cellY = Math.floor(pos.y / this.config.unitSize.height);
       var lPos = {
         lx: cellX,
         ly: cellY
@@ -177,8 +176,8 @@ module plates {
       return null;
     }
     clearAt(cellX :number, cellY :number, item :PlateItem) {
-      var left = cellX * this.config.unitWidth;
-      var top = cellY * this.config.unitHeight;
+      var left = cellX * this.config.unitSize.width;
+      var top = cellY * this.config.unitSize.height;
       this.context.clearRect(left, top, item.size.width, item.size.height);
       this.drawLadder();
     }

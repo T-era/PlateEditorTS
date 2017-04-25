@@ -2,10 +2,9 @@
 
 module plates {
   export interface Config {
-    unitWidth :number;
-    unitHeight :number;
-    editorWidth :number;
-    editorHeight :number;
+    unitSize :tools.Size;
+    editorSize :tools.Size;
+    editorShowSize :tools.Size;
     selections :PlateItem[];
     themeCol :tools.Color;
   }

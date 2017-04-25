@@ -7,10 +7,9 @@ module plate_test {
     var canvas = <HTMLCanvasElement>document.getElementById('canvas_test');
     var context = canvas.getContext('2d');
     var config = {
-      unitWidth: 25,
-      unitHeight: 15,
-      editorWidth: 100,
-      editorHeight: 1200,
+      unitSize : { width: 25, height: 15 },
+      editorSize: { width: 100, height: 1200 },
+      editorShowSize: {width: 100, height: 100 },
       selections: [],
       themeCol: new tools.Color(0, 128, 0)
     };
@@ -23,9 +22,11 @@ module plate_test {
           strokeColor: new tools.Color(192, 128, 128)
         })];
 
-    new plates.PlateEditor(
+    var pe = new plates.PlateEditor(
       canvas,
       config);
+    pe.redraw();
+    //pe.hover.save();
   }
   function rect(c, p :tools.Pointer, config :tools.DrawConfig) {
     c.beginPath();
