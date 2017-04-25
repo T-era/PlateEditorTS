@@ -29,8 +29,8 @@ module plate_scroll_test {
   }
   function rect(c, p :tools.Pointer, config :tools.DrawConfig) {
     c.beginPath();
-    tools.fillRect(c, new tools.Pointer(p.cx + 1, p.cy + 1), 48, 28, config);
-    tools.rect(c, new tools.Pointer(p.cx + 1, p.cy + 1), 48, 28, config);
+    tools.fillRect(c, new tools.Pointer(p.cx + 1, p.cy + 1), { width: 48, height: 28 }, config);
+    tools.rect(c, new tools.Pointer(p.cx + 1, p.cy + 1), { width: 48, height: 28 }, config);
     c.stroke();
   }
   function crcl(c, p :tools.Pointer, config :tools.DrawConfig) {

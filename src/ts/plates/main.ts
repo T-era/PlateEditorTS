@@ -35,7 +35,7 @@ module plates {
           pointer: this.pointer,
           size: config.editorShowSize,
           redraw: function() {
-            tools.rect(that.context, that.pointer, config.editorShowSize.width, config.editorShowSize.height, null);
+            tools.rect(that.context, that.pointer, config.editorShowSize, null);
           } },
         scrollIn: this.editor,
         viscosity: 0.95 });

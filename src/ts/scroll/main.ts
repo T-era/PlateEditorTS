@@ -89,7 +89,7 @@ module scroll {
     redraw() {
       var p = this.pointer;
       var area = this.size;
-      this.context.clearRect(p.cx, p.cy, this.size.width, this.size.height);
+      this.context.clearRect(p.cx, p.cy, area.width, area.height);
 
       this.context.beginPath();
       // clip領域のパスを設定

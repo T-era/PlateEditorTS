@@ -45,7 +45,7 @@ module scroll_test{
 
     redraw() {
       var area = this.size;
-      tools.rect(this.context , this.pointer, area.width, area.height, {
+      tools.rect(this.context , this.pointer, area, {
         strokeColor: new tools.Color(128, 128, 192),
         lineDash: [3,3]
       });

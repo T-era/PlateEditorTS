@@ -85,12 +85,12 @@ module tools {
     apply(context, config);
     context.arc(center.cx, center.cy, r, 0, 2 * Math.PI, false);
   }
-  export function rect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config :DrawConfig) {
+  export function rect(context :CanvasRenderingContext2D, leftTop :Pointer, size :Size, config :DrawConfig) {
     apply(context, config);
-    context.rect(leftTop.cx, leftTop.cy, width, height);
+    context.rect(leftTop.cx, leftTop.cy, size.width, size.height);
   }
-  export function fillRect(context :CanvasRenderingContext2D, leftTop :Pointer, width :number, height :number, config :DrawConfig) {
+  export function fillRect(context :CanvasRenderingContext2D, leftTop :Pointer, size :Size, config :DrawConfig) {
     apply(context, config);
-    context.fillRect(leftTop.cx, leftTop.cy, width, height);
+    context.fillRect(leftTop.cx, leftTop.cy, size.width, size.height);
   }
 }
