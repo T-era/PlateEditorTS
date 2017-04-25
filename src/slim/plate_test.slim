@@ -1,0 +1,13 @@
+doctype html
+html
+  head
+    meta charset="UTF-8"
+    script type="text/javascript" src="tools.js"
+    script type="text/javascript" src='hover.js'
+    script type="text/javascript" src="scroll.js"
+    script type="text/javascript" src="plates.js"
+    script type="text/javascript" src="test.js"
+    style type="text/css"
+      | canvas { border: 1px solid black; }
+  body onload='plate_test.init("canvas_test")'
+    canvas width='200' height='1200' style='width: 200px; height: 1200px; background: #efe;' id='canvas_test'

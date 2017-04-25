@@ -1,5 +1,6 @@
 /// <reference path='../../lib/tools.d.ts' />
 /// <reference path='../../lib/hover.d.ts' />
+/// <reference path='../../lib/scroll.d.ts' />
 /// <reference path='config.ts' />
 /// <reference path='editor.ts' />
 /// <reference path='pallet.ts' />
@@ -15,6 +16,7 @@ module plates {
     config :Config;
     onMouse :PlateItem;
     pallet :Pallet;
+    scroll :scroll.Scroll;
 
     constructor(canvas :HTMLCanvasElement, config :Config) {
       var that = this;
@@ -28,6 +30,15 @@ module plates {
       this.pallet = new Pallet(canvas, this.context, config, palletAt);
 
       this.editor = newEditor(canvas, that.context, config, function() { return that.onMouse; });
+      this.scroll = new scroll.Scroll(canvas, this.context, {
+        scroll: {
+          pointer: this.pointer,
+          size: config.editorShowSize,
+          redraw: function() {
+            tools.rect(that.context, that.pointer, config.editorShowSize.width, config.editorShowSize.height, null);
+          } },
+        scrollIn: this.editor,
+        viscosity: 0.95 });
 
       this.canvas.onclick = function(e :MouseEvent) {
         var pointer = tools.toPointer(e, that.canvas);
@@ -76,7 +87,7 @@ module plates {
     }
 
     redraw() {
-      this.editor.redraw();
+      this.scroll.redraw();
       this.pallet.redraw();
     }
   }

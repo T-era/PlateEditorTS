@@ -30,6 +30,8 @@ module plates {
     config :Config;
     getOnMouse :() => PlateItem;
 
+    drawSuggestion :() => void;
+
     constructor(canvas :HTMLCanvasElement,
         context :CanvasRenderingContext2D,
         config :Config,
@@ -48,8 +50,10 @@ module plates {
         that.onMouseMove(pointer);
       });
     }
+
     onMouseMove(pointer :tools.Pointer) {
       var pos = pointer.at(this);
+      this.drawSuggestion = null;
       if (tools.isOn(pos, this)) {
         var cellX = Math.floor(pos.x / this.config.unitSize.width);
         var cellY = Math.floor(pos.y / this.config.unitSize.height);
@@ -64,17 +68,21 @@ module plates {
                 shadow: SHADOW_ON_SUGGESTION };
               var duplicated = this.model.getDuplicated(om, { lx: cellX, ly: cellY });
               if (duplicated.length === 0) {
-                om.draw(new tools.Pointer(cellX * this.config.unitWidth, cellY * this.config.unitHeight), suggestionConfig);
+                this.drawSuggestion = function() {
+                  om.draw(new tools.Pointer(cellX * this.config.unitSize.width, cellY * this.config.unitSize.height), suggestionConfig);
+                }.bind(this);
               } else if (duplicated.length === 1) {
                 var replacementConfig = {
                   strokeColor: this.config.themeCol.ish(tools.RED),
                   fillColor: this.config.themeCol.ish(tools.RED),
                   shadow: SHADOW_ON_SUGGESTION };
-                om.draw(new tools.Pointer(cellX * this.config.unitWidth, cellY * this.config.unitHeight), suggestionConfig);
                 var replacementAt = duplicated[0];
                 var repItem = replacementAt.item;
                 var repAt = replacementAt.at;
-                repItem.draw(new tools.Pointer(repAt.lx * this.config.unitWidth, repAt.ly * this.config.unitHeight), replacementConfig);
+                this.drawSuggestion = function() {
+                  om.draw(new tools.Pointer(cellX * this.config.unitSize.width, cellY * this.config.unitSize.height), suggestionConfig);
+                  repItem.draw(new tools.Pointer(repAt.lx * this.config.unitSize.width, repAt.ly * this.config.unitSize.height), replacementConfig);
+                }.bind(this);
               }
             }
           }
@@ -85,6 +93,9 @@ module plates {
     redraw() {
       this.drawLadder();
       this.drawItems();
+      if (this.drawSuggestion) {
+        this.drawSuggestion();
+      }
     }
     drawLadder() {
       var context = this.context;
