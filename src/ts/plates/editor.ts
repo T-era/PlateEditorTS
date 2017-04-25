@@ -90,7 +90,8 @@ module plates {
       }
     }
 
-    redraw() {
+    redraw(p ?:tools.Pointer, s ?:tools.Size) {
+      //  TODO 矩形内だけ描画する？？
       this.drawLadder();
       this.drawItems();
       if (this.drawSuggestion) {

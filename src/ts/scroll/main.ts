@@ -98,7 +98,7 @@ module scroll {
       this.context.clip();
       {
         this.context.beginPath();
-        this.config.scrollIn.redraw();
+        this.config.scrollIn.redraw(p, area);
         this.context.stroke();
       }
       this.context.restore();
