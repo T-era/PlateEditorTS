@@ -2,6 +2,7 @@
 /// <reference path='../../lib/hover.d.ts' />
 /// <reference path='../../lib/scroll.d.ts' />
 /// <reference path='config.ts' />
+/// <reference path='plate_item.ts' />
 /// <reference path='editor.ts' />
 /// <reference path='pallet.ts' />
 
@@ -36,16 +37,18 @@ module plates {
           size: config.editorShowSize,
           redraw: function() {
             tools.rect(that.context, that.pointer, config.editorShowSize, config.scrollFrameStyle);
-          } },
+          }},
         scrollIn: this.editor,
-        viscosity: 0.95 });
+        viscosity: config.scrollViscosity });
 
       this.canvas.onclick = function(e :MouseEvent) {
         var pointer = tools.toPointer(e, that.canvas);
         if (that.onMouse) {
-          that.put(pointer, that.onMouse);
-          that.onMouse = null;
-          that.hover.setHoverImage(null);
+          var ok = that.put(pointer, that.onMouse);
+          if (ok) {
+            that.onMouse = null;
+            that.hover.setHoverImage(null);
+          }
         } else {
           that.onMouse = that.holdOnMouse(pointer);
           if (that.onMouse) {
@@ -57,12 +60,14 @@ module plates {
             }, e);
           }
         }
+        that.redraw();
+        that.hover.drawAt(e);
       };
     }
     holdOnMouse(pointer :tools.Pointer) :PlateItem {
       var editor = this.editor;
       var pos = pointer.at(editor);
-      if (this.isOnEditor(pos)) {
+      if (tools.isOn(pos, this.editor)) {
         return editor.tryRmv(pos);
       }
       return this.pallet.getSelection(pointer);
@@ -71,13 +76,12 @@ module plates {
       var editor = this.editor;
 
       var pos = pointer.at(editor);
-      if (this.isOnEditor(pos)) {
-        editor.tryAdd(item, pos);
+      if (tools.isOn(pos, this.editor)) {
+        return editor.tryAdd(item, pos);
+      } else {
+        // Drop
+        return true;
       }
-    }
-    isOnEditor(pos :tools.Pos) :boolean {
-      return 0 <= pos.x && pos.x < this.config.editorSize.width
-          && 0 <= pos.y && pos.y < this.config.editorSize.height;
     }
 
     redraw() {

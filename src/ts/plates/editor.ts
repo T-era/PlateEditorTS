@@ -4,7 +4,7 @@
 module plates {
   export interface Editor extends tools.CanvasItem{
     model :EditorModel;
-    tryAdd(item :PlateItem, pos :tools.Pos);
+    tryAdd(item :PlateItem, pos :tools.Pos) :boolean;
     tryRmv(pos :tools.Pos) :PlateItem;
 
     redraw();
@@ -54,37 +54,28 @@ module plates {
     onMouseMove(pointer :tools.Pointer) {
       var pos = pointer.at(this);
       this.drawSuggestion = null;
-      if (tools.isOn(pos, this)) {
-        var cellX = Math.floor(pos.x / this.config.unitSize.width);
-        var cellY = Math.floor(pos.y / this.config.unitSize.height);
-        if (cellX >= 0 && cellY >= 0) {
-          var om = this.getOnMouse();
-          if (om) {
-            if (this.isInRange(om, cellX, cellY)) {
-              var suggestionConfig = {
-                strokeColor: this.config.themeCol.lighten(),
-                fillColor: this.config.themeCol.lighten().lighten(),
-                alpha: 0.5,
-                shadow: SHADOW_ON_SUGGESTION };
-              var duplicated = this.model.getDuplicated(om, { lx: cellX, ly: cellY });
-              if (duplicated.length === 0) {
-                this.drawSuggestion = function() {
-                  om.draw(new tools.Pointer(cellX * this.config.unitSize.width, cellY * this.config.unitSize.height), suggestionConfig);
-                }.bind(this);
-              } else if (duplicated.length === 1) {
-                var replacementConfig = {
-                  strokeColor: this.config.themeCol.ish(tools.RED),
-                  fillColor: this.config.themeCol.ish(tools.RED),
-                  shadow: SHADOW_ON_SUGGESTION };
-                var replacementAt = duplicated[0];
-                var repItem = replacementAt.item;
-                var repAt = replacementAt.at;
-                this.drawSuggestion = function() {
-                  om.draw(new tools.Pointer(cellX * this.config.unitSize.width, cellY * this.config.unitSize.height), suggestionConfig);
-                  repItem.draw(new tools.Pointer(repAt.lx * this.config.unitSize.width, repAt.ly * this.config.unitSize.height), replacementConfig);
-                }.bind(this);
-              }
-            }
+      if (! tools.isOn(pos, this)) {
+        return;
+      }
+      var lPos = toLogicalPos(this.config, pos, Math.floor);
+      var om = this.getOnMouse();
+      if (lPos.lx >= 0 && lPos.ly >= 0 && om) {
+        if (this.isInRange(om.size, lPos)) {
+          var suggestionConfig = _getSuggestionConfig(this.config.themeCol);
+          var duplicated = this.model.getDuplicated(om, lPos);
+          if (duplicated.length === 0) {
+            this.drawSuggestion = function() {
+              om.draw(fromLogicalPos(this.config, lPos, this).pointer(), suggestionConfig);
+            }.bind(this);
+          } else if (duplicated.length === 1) {
+            var replacementConfig = _getReplacementConfig(this.config.themeCol);
+            var replacementAt = duplicated[0];
+            var repItem = replacementAt.item;
+            var repAt = replacementAt.at;
+            this.drawSuggestion = function() {
+              om.draw(fromLogicalPos(this.config, lPos, this).pointer(), suggestionConfig);
+              repItem.draw(fromLogicalPos(this.config, repAt, this).pointer(), replacementConfig);
+            }.bind(this);
           }
         }
       }
@@ -98,6 +89,7 @@ module plates {
         this.drawSuggestion();
       }
     }
+
     drawLadder() {
       var context = this.context;
       var config = this.config;
@@ -126,69 +118,60 @@ module plates {
       var model = this.model;
       var items = model.list();
       for (var cellY = 0, maxY = items.length; cellY < maxY; cellY ++) {
-        if (! items[cellY]) { items[cellY] = []; }
+        if (! items[cellY]) { continue; }
         for (var cellX = 0, maxX = items[cellY].length; cellX < maxX; cellX ++) {
-          var x = this.pointer.cx + cellX * config.unitSize.width;
-          var y = this.pointer.cy + cellY * config.unitSize.height;
           var itemAt = items[cellY][cellX];
           if (itemAt && itemAt.at.lx == cellX && itemAt.at.ly == cellY) {
             var item = itemAt.item;
-            item.drawPath(context, new tools.Pointer(x, y), item.drawConfig);
+            var pointer = fromLogicalPos(this.config, { lx: cellX, ly: cellY }, this).pointer();
+            item.drawPath(context, pointer, item.drawConfig);
           }
         }
       }
     }
 
-    tryAdd(item :PlateItem, pos :tools.Pos) {
-      var cellX = Math.floor(pos.x / this.config.unitSize.width);
-      var cellY = Math.floor(pos.y / this.config.unitSize.height);
-      var lPos = {
-        lx: cellX,
-        ly: cellY
-      };
+    tryAdd(item :PlateItem, pos :tools.Pos) :boolean {
+      var lPos = toLogicalPos(this.config, pos, Math.floor);
 
-      if (this.isInRange(item, cellX, cellY)) {
+      if (this.isInRange(item.size, lPos)) {
         var duplicated = this.model.getDuplicated(item, lPos);
         if (duplicated.length === 1) {
           var removed = this.model.dropAt(lPos, item);
-          if (removed) {
-            this.clearAt2(removed);
-          }
         }
         if (duplicated.length <= 1) {
-          var left = cellX * this.config.unitSize.width;
-          var top = cellY * this.config.unitSize.height;
-
           this.model.put(item, lPos);
+          return true;
         }
       }
+      return false;
     }
-    isInRange(item :PlateItem, cellX :number, cellY :number) {
-      return 0 <= cellX && cellX < this.model.maxX - Math.ceil(item.size.width / this.config.unitSize.width) + 1
-          && 0 <= cellY && cellY < this.model.maxY - Math.ceil(item.size.height / this.config.unitSize.height) + 1;
+    isInRange(size :tools.Size, lPos :LogicalPos) {
+      var lSize = toLogicalSize(this.config, size, Math.ceil);
+      return 0 <= lPos.lx && lPos.lx < this.model.maxX - lSize.lWidth + 1
+          && 0 <= lPos.ly && lPos.ly < this.model.maxY - lSize.lHeight + 1;
     }
     tryRmv(pos :tools.Pos) :PlateItem {
-      var cellX = Math.floor(pos.x / this.config.unitSize.width);
-      var cellY = Math.floor(pos.y / this.config.unitSize.height);
-      var lPos = {
-        lx: cellX,
-        ly: cellY
-      }
+      var lPos = toLogicalPos(this.config, pos, Math.floor);
+
       var itemAt = this.model.dropAt(lPos);
       if (itemAt) {
-        this.clearAt2(itemAt);
         return itemAt.item;
       }
       return null;
     }
-    clearAt(cellX :number, cellY :number, item :PlateItem) {
-      var left = cellX * this.config.unitSize.width;
-      var top = cellY * this.config.unitSize.height;
-      this.context.clearRect(left, top, item.size.width, item.size.height);
-      this.drawLadder();
-    }
-    clearAt2(itemAt :PlateItemAt) {
-      this.clearAt(itemAt.at.lx, itemAt.at.ly, itemAt.item);
-    }
+  }
+  function _getSuggestionConfig(themeCol :tools.Color) {
+    return {
+      strokeColor: themeCol.lighten(),
+      fillColor: themeCol.lighten().lighten(),
+      alpha: 0.5,
+      shadow: SHADOW_ON_SUGGESTION };
+  }
+  function _getReplacementConfig(themeCol :tools.Color) {
+    return {
+      alpha: 0.7,
+      strokeColor: themeCol.ish(tools.RED),
+      fillColor: themeCol.ish(tools.RED),
+      shadow: SHADOW_ON_SUGGESTION };
   }
 }

@@ -62,11 +62,9 @@ module scroll {
     }
     getSpeed(current :tools.Pointer, past :tools.Pointer) :Speed {
       var dx = (this.size.width >= this.config.scrollIn.size.width
-          ? 0
-          : current.cx - past.cx);
+          ? 0 : current.cx - past.cx);
       var dy = (this.size.height >= this.config.scrollIn.size.height
-          ? 0
-          : current.cy - past.cy);
+          ? 0 : current.cy - past.cy);
       return { dx: dx, dy: dy };
     }
     running() {

@@ -1,17 +1,10 @@
 /// <reference path='../../lib/tools.d.ts'/>
+/// <reference path='logical_pos.ts'/>
 
 module plates {
-  export interface LogicalPos {
-    lx: number,
-    ly: number
-  }
   export interface PlateItemAt {
     item :PlateItem;
     at :LogicalPos;
-  }
-  interface UnitSize {
-    unitWidth: number;
-    unitHeight: number;
   }
 
   export interface EditorModel {
@@ -23,6 +16,7 @@ module plates {
     list() :PlateItemAt[][];
     dropAt(lPos :LogicalPos, replace ?:PlateItem) :PlateItemAt;
   }
+
   export function newEditorModel(config :Config) :EditorModel {
     return new _EditorModel(config);
   }
@@ -35,28 +29,22 @@ module plates {
 
     constructor(config :Config) {
       this.config = config;
-      var unitMax = this._toUnitSize(config.editorSize, Math.floor);
-      this.maxX = unitMax.unitWidth;
-      this.maxY = unitMax.unitHeight;
+      var logicalMax = toLogicalSize(this.config, config.editorSize, Math.floor);
+      this.maxX = logicalMax.lWidth;
+      this.maxY = logicalMax.lHeight;
     }
 
     getDuplicated(item :PlateItem, lPos :LogicalPos) :PlateItemAt[] {
-      var dup = this._getAround(lPos, item);
-
-      return dup;
+      return this._getAround(lPos, item);
     }
 
     put(item :PlateItem, lPos :LogicalPos) {
-      var itemAt = {
-        item: item,
-        at: lPos
-      };
-      var unitSize = this._toUnitSize(item.size, Math.ceil);
-      for (var i = 0; i < unitSize.unitHeight; i ++) {
-        for (var j = 0; j < unitSize.unitWidth; j ++) {
-          this._put({ lx: j + lPos.lx, ly: i + lPos.ly }, itemAt);
-        }
-      }
+      var itemAt = { item: item, at: lPos };
+      var logicalSize = toLogicalSize(this.config, item.size, Math.ceil);
+
+      _forEachUnit(logicalSize, function(dx :number, dy :number) {
+        this._put(_shiftLogicalPos(lPos, dx, dy), itemAt);
+      }.bind(this));
     }
 
     list() :PlateItemAt[][] {
@@ -64,37 +52,30 @@ module plates {
     }
 
     dropAt(lPos :LogicalPos, replace? :PlateItem) :PlateItemAt {
-      var target :PlateItemAt;
-      if (replace != null) {
-        var dup = this._getAround(lPos, replace);
-        if (dup.length === 1) {
-          target = dup[0];
+      var target :PlateItemAt = (function(that) {
+        if (replace) {
+          var dup = that._getAround(lPos, replace);
+          if (dup.length === 1) {
+            return dup[0];
+          } else {
+            return null;
+          }
         } else {
-          return null;
+          return that._get(lPos);
         }
-      } else {
-        target = this._get(lPos);
-      }
+      })(this);
+
       if (target != null) {
         var item = target.item;
-        var at = target.at;
-        var itemSize = this._toUnitSize(item.size, Math.ceil);
-        for (var cellY = at.ly; cellY < at.ly + itemSize.unitHeight; cellY ++) {
-          for (var cellX = at.lx; cellX < at.lx + itemSize.unitWidth; cellX ++) {
-            this._put({ lx: cellX, ly: cellY }, null);
-          }
-        }
+        var itemSize = toLogicalSize(this.config, item.size, Math.ceil);
+        _forEachUnit(itemSize, function(dx :number, dy :number) {
+          this._put(_shiftLogicalPos(target.at, dx, dy), null);
+        }.bind(this));
         return target;
       }
+      return null;
     }
 
-    _toUnitSize(size :tools.Size, round ?:(number) => number) :UnitSize {
-      var rawW = size.width / this.config.unitSize.width;
-      var rawH = size.height / this.config.unitSize.height;
-      return {
-        unitWidth: round ? round(rawW) : rawW,
-        unitHeight: round ? round(rawH) : rawH };
-    }
     _put(lPos :LogicalPos, itemAt :PlateItemAt) {
       if (! this.listContents[lPos.ly]) {
         this.listContents[lPos.ly] = [];
@@ -110,18 +91,30 @@ module plates {
       }
       return null;
     }
+
     _getAround(lPos :LogicalPos, item :PlateItem) :PlateItemAt[] {
-      var unitSize = this._toUnitSize(item.size);
+      var logicalSize = toLogicalSize(this.config, item.size);
       var dup :PlateItemAt[] = [];
-      for (var iiY = 0; iiY < unitSize.unitHeight; iiY ++) {
-        for (var iiX = 0; iiX < unitSize.unitWidth; iiX ++) {
-          var itemAt = this._get({ lx: lPos.lx + iiX, ly: lPos.ly + iiY });
-          if (itemAt != null && dup.indexOf(itemAt) < 0) {
-            dup.push(itemAt);
-          }
+      _forEachUnit(logicalSize, function(dx :number, dy :number) {
+        var itemAt = this._get(_shiftLogicalPos(lPos, dx, dy));
+        if (itemAt != null && dup.indexOf(itemAt) < 0) {
+          dup.push(itemAt);
         }
-      }
+      }.bind(this));
+
       return dup;
     }
+  }
+
+  function _forEachUnit(logicalSize :LogicalSize, f:(dx :number, dy :number) => void) :void {
+    for (var dy= 0; dy < logicalSize.lHeight; dy ++) {
+      for (var dx = 0; dx < logicalSize.lWidth; dx ++) {
+        f(dx, dy);
+      }
+    }
+  }
+
+  function _shiftLogicalPos(lPos :LogicalPos, dx :number, dy :number) :LogicalPos {
+    return { lx: lPos.lx + dx, ly: lPos.ly + dy };
   }
 }
