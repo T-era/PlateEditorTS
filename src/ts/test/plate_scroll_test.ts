@@ -24,9 +24,10 @@ module plate_scroll_test {
           strokeColor: new tools.Color(192, 128, 128)
         })];
 
-    new plates.PlateEditor(
+    var pe = new plates.PlateEditor(
       canvas,
-      config).redraw();
+      config);
+    pe.redraw();
   }
   function rect(c, p :tools.Pointer, config :tools.DrawConfig) {
     c.beginPath();

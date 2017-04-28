@@ -10,6 +10,7 @@ module tools {
   export interface DrawConfig {
     lineWidth ?:number;
     lineCap ?:string;
+    lineJoin ?:string;
     lineDash ?:number[];
     strokeColor ?:Color;
     fillColor ?:Color;
@@ -19,6 +20,7 @@ module tools {
   var DEFAULT :DrawConfig = {
     lineWidth: 1,
     lineCap: 'butt',
+    lineJoin: 'miter',
     lineDash: [],
     strokeColor: BLACK,
     fillColor: BLACK,
@@ -43,6 +45,7 @@ module tools {
       return {
         lineWidth: getValue('lineWidth'),
         lineCap: getValue('lineCap'),
+        lineJoin: getValue('lineJoin'),
         lineDash: getValue('lineDash'),
         strokeColor: getValue('strokeColor'),
         fillColor: getValue('fillColor'),
@@ -60,6 +63,7 @@ module tools {
     var ex = completeDefault(config);
     context.lineWidth = ex.lineWidth;
     context.lineCap = ex.lineCap;
+    context.lineJoin = ex.lineJoin;
     context.setLineDash(ex.lineDash);
     if (ex.shadow) {
       if (ex.shadow.color) {
@@ -76,7 +80,7 @@ module tools {
     context.fillStyle = ex.fillColor.toString();
   }
 
-  function draw(context :CanvasRenderingContext2D, config :DrawConfig, f :() => void) {
+  export function draw(context :CanvasRenderingContext2D, config :DrawConfig, f :() => void) {
     apply(context, config);
     context.beginPath();
     f();
