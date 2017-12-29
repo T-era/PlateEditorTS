@@ -23,7 +23,7 @@ module plates {
       var that = this;
       this.canvas = canvas;
       this.context = canvas.getContext('2d');
-      this.hover = hover.newHover(canvas, function() { that.redraw(); });
+      this.hover = hover.newHover(canvas);
       this.config = config;
       this.size = canvas;
 
@@ -52,12 +52,16 @@ module plates {
         } else {
           that.onMouse = that.holdOnMouse(pointer);
           if (that.onMouse) {
-            that.hover.setHoverImage(function(context :CanvasRenderingContext2D, pointer :tools.Pointer, drawConfig? :tools.DrawConfig) {
-              var center = new tools.Pointer(
-                pointer.cx - Math.ceil(that.config.unitSize.width / 2),
-                pointer.cy - Math.ceil(that.config.unitSize.height / 2));
-              that.onMouse.draw(center, drawConfig);
-            }, e);
+            that.hover.setHoverImage({
+                hover: function(context :CanvasRenderingContext2D, pointer :tools.Pointer, drawConfig? :tools.DrawConfig) {
+                  var center = new tools.Pointer(
+                    pointer.cx - Math.ceil(that.config.unitSize.width / 2),
+                    pointer.cy - Math.ceil(that.config.unitSize.height / 2));
+                  that.onMouse.draw(center, drawConfig);
+                },
+                width: that.config.unitSize.width * 4,
+                height: that.config.unitSize.height * 4
+              }, e);
           }
         }
         that.redraw();
