@@ -47,7 +47,7 @@ module plates {
           var ok = that.put(pointer, that.onMouse);
           if (ok) {
             that.onMouse = null;
-            that.hover.setHoverImage(null);
+            that.hover.setHoverImage(null, null, function(context) {});
           }
         } else {
           that.onMouse = that.holdOnMouse(pointer);
@@ -61,11 +61,11 @@ module plates {
                 },
                 width: that.config.unitSize.width * 4,
                 height: that.config.unitSize.height * 4
-              }, e);
+              }, e, function(context) {});
           }
         }
         that.redraw();
-        that.hover.drawAt(e);
+        that.hover.drawAt(e, function() {});
       };
     }
     holdOnMouse(pointer :tools.Pointer) :PlateItem {

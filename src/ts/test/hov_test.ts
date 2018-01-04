@@ -10,10 +10,10 @@ module hov_test{
       width: 52,
       height: 32
     };
-    hov.setHoverImage(myHover);
+    hov.setHoverImage(myHover, null, function(context) {});
     var tmp;
     cnv.onclick = function(e :MouseEvent) {
-      hov.setHoverImage(tmp ? myHover : null, e);
+      hov.setHoverImage(tmp ? myHover : null, e, function(context) {});
       tmp = ! tmp;
     }
     var context = cnv.getContext('2d');
